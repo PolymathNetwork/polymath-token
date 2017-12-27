@@ -1,0 +1,8 @@
+/node_modules
+/build
+/.DS_Store
+.npm-debug.log
+coverage/
+coverageEnv/
+coverage.json
+.idea
