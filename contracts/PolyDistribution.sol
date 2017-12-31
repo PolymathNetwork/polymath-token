@@ -57,54 +57,54 @@ contract PolyDistribution is Ownable {
     require(allocations[_recipient].totalAllocated == 0);
     require(_totalAllocated > 0);
     string memory fromSupply;
-    if (_supply == 1) {
+    if (_supply == 0) {
       fromSupply = 'investor';
       AVAILABLE_INVESTOR_SUPPLY.sub(_totalAllocated);
-      allocations[_recipient] = Allocation(AllocationType.INVESTOR, 0, 0, _totalAllocated, 0);
-    } else if (_supply == 2) {
+      allocations[_recipient] = Allocation(uint8(AllocationType.INVESTOR), 0, 0, _totalAllocated, 0);
+    } else if (_supply == 1) {
       fromSupply = 'founder';
       AVAILABLE_FOUNDER_SUPPLY.sub(_totalAllocated);
-      allocations[_recipient] = Allocation(AllocationType.FOUNDER, 1 years, 4 years, _totalAllocated, 0);
-    } else if (_supply == 3) {
+      allocations[_recipient] = Allocation(uint8(AllocationType.FOUNDER), 1 years, 4 years, _totalAllocated, 0);
+    } else if (_supply == 2) {
       fromSupply = 'airdrop';
       AVAILABLE_AIRDROP_SUPPLY.sub(_totalAllocated);
-      allocations[_recipient] = Allocation(AllocationType.AIRDROP, 0, 1 years, _totalAllocated, 0);
-    } else if (_supply == 4) {
+      allocations[_recipient] = Allocation(uint8(AllocationType.AIRDROP), 0, 1 years, _totalAllocated, 0);
+    } else if (_supply == 3) {
       fromSupply = 'bdmarket';
       AVAILABLE_BDMARKET_SUPPLY.sub(_totalAllocated);
-      allocations[_recipient] = Allocation(AllocationType.BDMARKET, 0, 0, _totalAllocated, 0);
-    } else if (_supply == 5) {
+      allocations[_recipient] = Allocation(uint8(AllocationType.BDMARKET), 0, 0, _totalAllocated, 0);
+    } else if (_supply == 4) {
       fromSupply = 'advisor';
       AVAILABLE_ADVISOR_SUPPLY.sub(_totalAllocated);
-      allocations[_recipient] = Allocation(AllocationType.ADVISOR, 215 days, 0, _totalAllocated, 0);
-    } else if (_supply == 6) {
+      allocations[_recipient] = Allocation(uint8(AllocationType.ADVISOR), 215 days, 0, _totalAllocated, 0);
+    } else if (_supply == 5) {
       fromSupply = 'reserve';
       AVAILABLE_RESERVE_SUPPLY.sub(_totalAllocated);
-      allocations[_recipient] = Allocation(AllocationType.RESERVE, 100 days, 4 years, _totalAllocated, 0);
+      allocations[_recipient] = Allocation(uint8(AllocationType.RESERVE), 100 days, 4 years, _totalAllocated, 0);
     }
     grandTotalAllocated.add(_totalAllocated);
     LogNewAllocation(_recipient, fromSupply, _totalAllocated, grandTotalAllocated);
   }
 
   /**
-    * @dev Allow the recipient to claim their allocation
+    * @dev Transfer a recipients available allocation to their address
     */
-  function claimTokens () public {
-    require(allocations[msg.sender].amountClaimed < allocations[msg.sender].totalAllocated);
-    require(block.timestamp >= startTime + allocations[msg.sender].cliffDuration);
+  function transferTokens (address _recipient) public {
+    require(allocations[_recipient].amountClaimed < allocations[_recipient].totalAllocated);
+    require(block.timestamp >= startTime + allocations[_recipient].cliffDuration);
     // Determine the available amount that can be claimed
-    if (allocations[msg.sender].endVesting > now) {
-      uint256 availableAtTime = allocations[msg.sender].totalAllocated.mul(now).div(allocations[msg.sender].endVesting);
-      uint256 availablePolyToClaim = availableAtTime.sub(allocations[msg.sender].amountClaimed);
+    if (allocations[_recipient].endVesting > now) {
+      uint256 availableAtTime = allocations[_recipient].totalAllocated.mul(now).div(allocations[_recipient].endVesting);
+      uint256 availablePolyToClaim = availableAtTime.sub(allocations[_recipient].amountClaimed);
       grandTotalClaimed.add(availablePolyToClaim);
-      allocations[msg.sender].amountClaimed = availableAtTime;
-      POLY.transfer(msg.sender, availablePolyToClaim);
+      allocations[_recipient].amountClaimed = availableAtTime;
+      POLY.transfer(_recipient, availablePolyToClaim);
     } else {
-      allocations[msg.sender].amountClaimed = allocations[msg.sender].totalAllocated;
-      grandTotalClaimed.add(allocations[msg.sender].totalAllocated);
-      POLY.transfer(msg.sender, allocations[msg.sender].totalAllocated);
+      allocations[_recipient].amountClaimed = allocations[_recipient].totalAllocated;
+      grandTotalClaimed.add(allocations[_recipient].totalAllocated);
+      POLY.transfer(_recipient, allocations[_recipient].totalAllocated);
     }
-    LogPolyClaimed(msg.sender, allocations[msg.sender].AllocationSupply, allocations[msg.sender].amountClaimed, allocations[msg.sender].totalAllocated, grandTotalClaimed);
+    LogPolyClaimed(_recipient, allocations[_recipient].AllocationSupply, allocations[_recipient].amountClaimed, allocations[_recipient].totalAllocated, grandTotalClaimed);
   }
 
   // Prevent accidental ether payments to the contract
