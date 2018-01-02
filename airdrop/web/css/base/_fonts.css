@@ -1,0 +1,7 @@
+@font-face {
+  font-family: 'Lucida Grande';
+  src: url('../fonts/lucidagrande.eot');
+  src: url('../fonts/lucidagrande.eot') format('embedded-opentype'), url('../fonts/lucidagrande.woff2') format('woff2'), url('../fonts/lucidagrande.woff') format('woff'), url('../fonts/lucidagrande.ttf') format('truetype'), url('../fonts/lucidagrande.svg#lucidagrande') format('svg');
+}
+
+/*# sourceMappingURL=data:application/json;charset=utf8;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbImJhc2UvX2ZvbnRzLmxlc3MiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IkFBQUE7RUFDSSxhQUFhLGVBQWI7RUFDQSxTQUFTLDRCQUFUO0VBQ0EsU0FBUyw2QkFBNkIsT0FBTywwQkFDcEMsK0JBQStCLE9BQU8sY0FDdEMsOEJBQThCLE9BQU8sYUFDckMsNkJBQTZCLE9BQU8saUJBQ3BDLDBDQUEwQyxPQUFPLE1BSjFEIiwic291cmNlc0NvbnRlbnQiOlsiQGZvbnQtZmFjZSB7XG4gICAgZm9udC1mYW1pbHk6ICdMdWNpZGEgR3JhbmRlJztcbiAgICBzcmM6IHVybCgnLi4vZm9udHMvbHVjaWRhZ3JhbmRlLmVvdCcpO1xuICAgIHNyYzogdXJsKCcuLi9mb250cy9sdWNpZGFncmFuZGUuZW90JykgZm9ybWF0KCdlbWJlZGRlZC1vcGVudHlwZScpLFxuICAgICAgICAgdXJsKCcuLi9mb250cy9sdWNpZGFncmFuZGUud29mZjInKSBmb3JtYXQoJ3dvZmYyJyksXG4gICAgICAgICB1cmwoJy4uL2ZvbnRzL2x1Y2lkYWdyYW5kZS53b2ZmJykgZm9ybWF0KCd3b2ZmJyksXG4gICAgICAgICB1cmwoJy4uL2ZvbnRzL2x1Y2lkYWdyYW5kZS50dGYnKSBmb3JtYXQoJ3RydWV0eXBlJyksXG4gICAgICAgICB1cmwoJy4uL2ZvbnRzL2x1Y2lkYWdyYW5kZS5zdmcjbHVjaWRhZ3JhbmRlJykgZm9ybWF0KCdzdmcnKTtcbn0iXSwiZmlsZSI6ImJhc2UvX2ZvbnRzLmNzcyJ9 */

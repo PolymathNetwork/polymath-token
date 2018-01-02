@@ -1,0 +1,85 @@
+@mixin box-shadow($args...) {
+    -webkit-box-shadow: $args;
+    -moz-box-shadow: $args;
+    box-shadow: $args;
+}
+
+@mixin transition($args...) {
+    -webkit-transition: $args;
+    -moz-transition: $args;
+    -ms-transition: $args;
+    -o-transition: $args;
+    transition: $args;
+}
+
+@mixin transform($args...) {
+    -webkit-transform: $args;
+    -moz-transform: $args;
+    -ms-transform: $args;
+    -o-transform: $args;
+    transform: $args;
+}
+
+@mixin animation($args...) {
+    -webkit-animation: $args;
+    -moz-animation: $args;
+    -ms-animation: $args;
+    -o-animation: $args;
+    animation: $args;
+}
+
+
+/* Animations*/
+@mixin slideIn() {
+    @include animation(slideIn 0.5s cubic-bezier(.2,1,.2,1) 0.2s forwards);
+}
+@keyframes slideIn {
+  0% {
+    opacity: 0;
+    @include transform(translateX(30px));
+  }
+  100% {
+    opacity: 1;
+    @include transform(translateX(0));
+  }
+}
+
+
+/* Breakpoints */
+@mixin bp($breakpoint) {
+    @if $breakpoint == "xxs" {
+        @media (max-width: 350px) {
+            @content;
+        }
+    }
+
+    @if $breakpoint == "xs" {
+        @media (max-width: 480px) {
+            @content;
+        }
+    }
+
+    @else if $breakpoint == "sm" {
+        @media (max-width: 768px) {
+            @content;
+        }
+    }
+
+    @else if $breakpoint == "md" {
+        @media (max-width: 991px) {
+            @content;
+        }
+    }
+
+    @else if $breakpoint == "budgetBreakdown" {
+        @media (max-width: 1010px) {
+            @content;
+        }
+    }
+
+    @else if $breakpoint == "lg" {
+        @media (max-width: 1200px) {
+            @content;
+        }
+    }
+}
