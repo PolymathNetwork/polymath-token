@@ -11,10 +11,10 @@ module.exports = {
       network_id: '*',
     },
     ropsten: {
-      host: 'localhost',
-      port: 1337,
+      //host: 'localhost',
+      //port: 1337,
       network_id: '3',
-      from: '0xb571be0e1876dc43345cfb08e1ad2792f678aefd',
+      //from: '0xb571be0e1876dc43345cfb08e1ad2792f678aefd',
       gas: 4.612e6,
     },
     coverage: {

@@ -26,7 +26,6 @@ contract PolyDistribution is Ownable {
   uint256 grandTotalAllocated = 0;
   uint256 grandTotalClaimed = 0;
   uint256 startTime;
-  bool initialized;
 
   // Allocation with vesting information
   struct Allocation {
@@ -44,11 +43,9 @@ contract PolyDistribution is Ownable {
   /**
     * @dev Constructor function - Set the poly token address
     */
-  function initializePolyDistribution (address _polyTokenAddress) onlyOwner public {
-    require(!initialized);
-    POLY = PolyToken(_polyTokenAddress);
+  function PolyDistribution() public {
     startTime = now + 10 minutes;
-    initialized = true;
+    POLY = new PolyToken(this);
   }
 
   /**
