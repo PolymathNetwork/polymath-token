@@ -1,6 +1,6 @@
 pragma solidity ^0.4.18;
 
-import '../interfaces/IERC20.sol';
+import './interfaces/IERC20.sol';
 import './PolyToken.sol';
 import './SafeMath.sol';
 import './Ownable.sol';
