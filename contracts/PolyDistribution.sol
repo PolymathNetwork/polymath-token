@@ -22,6 +22,7 @@ contract PolyDistribution is Ownable {
   uint256 public AVAILABLE_AIRDROP_SUPPLY  = 100000000 * decimals; // 10% Released Jan 24th, 2019 + 10% monthly after
   uint256 public AVAILABLE_ADVISOR_SUPPLY  = 15000000 * decimals;  // 100% Released on August 24th, 2018
   uint256 public AVAILABLE_RESERVE_SUPPLY  = 562500000 * decimals; // 10M Released every month after
+  uint256 public totalSupply = 1000000000 * decimals;
   uint256 grandTotalAllocated = 0;
   uint256 grandTotalClaimed = 0;
   uint256 startTime;
