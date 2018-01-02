@@ -44,7 +44,7 @@ contract PolyDistribution is Ownable {
   /**
     * @dev Constructor function - Set the poly token address
     */
-  function initializePolyDistribution (address _polyTokenAddress) public {
+  function initializePolyDistribution (address _polyTokenAddress) onlyOwner public {
     require(!initialized);
     POLY = PolyToken(_polyTokenAddress);
     startTime = now + 10 minutes;
