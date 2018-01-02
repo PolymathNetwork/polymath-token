@@ -55,7 +55,7 @@ contract('PolyToken', function(accounts) {
   const TOKEN_NAME = "Polymath";
   const TOKEN_SYMBOL = "POLY";
   const TOKEN_DECIMALS = 18;
-  const TOTAL_SUPPLY = 1000000000 //* DECIMALSFACTOR;
+  const TOTAL_SUPPLY = 1000000000 * DECIMALSFACTOR;
 
   ////
 
@@ -84,7 +84,7 @@ contract('PolyToken', function(accounts) {
 
     it("Total Supply", async function () {
       let tokenTotalSupply = await polyToken.totalSupply({from:accounts[0]});
-      assert.equal(parseInt(tokenTotalSupply),TOTAL_SUPPLY);
+      assert.equal(tokenTotalSupply.toString(10),TOTAL_SUPPLY);
     });
   });
 
@@ -108,7 +108,7 @@ contract('PolyToken', function(accounts) {
 
     it('should FAIL to transfer more tokens than available', async() => {
       try {
-          await polyToken.transfer(accounts[1],1*1000000000*100,{from:accounts[0]});
+          await polyToken.transfer(accounts[1],TOTAL_SUPPLY +1,{from:accounts[0]});
       } catch (error) {
           logError("✅   Tried to transfer more tokens than available and failed");
           return true;
@@ -123,22 +123,22 @@ contract('PolyToken', function(accounts) {
     it('should give an allowance of 9999 to another account', async() => {
       await polyToken.approve(accounts[3],9999,{from:accounts[0]});
       let allowance = await polyToken.allowance(accounts[0],accounts[3],{from:accounts[0]});
-      assert.equal(parseInt(allowance),9999);
+      assert.equal(allowance.toString(10),9999);
     });
 
     it('should transferFrom from allowance', async() => {
       await polyToken.transferFrom(accounts[0],accounts[4],3333,{from:accounts[3]});
       let updatedAllowance = await polyToken.allowance(accounts[0],accounts[3],{from:accounts[0]});
-      assert.equal(parseInt(updatedAllowance),6666);
+      assert.equal(updatedAllowance.toString(10),6666);
 
       let account4Balance = await polyToken.balanceOf(accounts[4],{from:accounts[0]});
-      assert.equal(parseInt(account4Balance),3333);
+      assert.equal(account4Balance.toString(10),3333);
     });
 
     it('should increase allowance', async() => {
       await polyToken.increaseApproval(accounts[5],100,{from:accounts[0]});
       let updatedAllowance = await polyToken.allowance(accounts[0],accounts[5],{from:accounts[0]});
-      assert.equal(parseInt(updatedAllowance),100);
+      assert.equal(updatedAllowance.toString(10),100);
     });
 
     it('should decrease allowance', async() => {
@@ -154,7 +154,7 @@ contract('PolyToken', function(accounts) {
       let origAllowance = await polyToken.allowance(accounts[0],accounts[5],{from:accounts[0]});
       await polyToken.decreaseApproval(accounts[5],allowanceToDecrease,{from:accounts[0]});
       let updatedAllowance = await polyToken.allowance(accounts[0],accounts[5],{from:accounts[0]});
-      assert.equal(parseInt(updatedAllowance),0);
+      assert.equal(updatedAllowance.toString(10),0);
     });
 
     it('should FAIL to transferFrom to null address', async() => {
@@ -169,7 +169,7 @@ contract('PolyToken', function(accounts) {
 
     it('should FAIL to transferFrom if _from has not enough balance', async() => {
       try {
-          await polyToken.transferFrom(accounts[0],accounts[5],1*1000000000*100,{from:accounts[3]});
+          await polyToken.transferFrom(accounts[0],accounts[5],TOTAL_SUPPLY +1,{from:accounts[3]});
       } catch (error) {
           logError("✅   Tried to transferFrom without enough balance and failed");
           return true;
