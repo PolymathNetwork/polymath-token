@@ -16,16 +16,17 @@ contract PolyDistribution is Ownable {
   PolyToken public POLY;
 
   uint256 private constant decimals = 10**uint256(18);
-  enum AllocationType { INVESTOR, FOUNDER, AIRDROP, BDMARKET, ADVISOR, RESERVE }
-  uint256 public AVAILABLE_INVESTOR_SUPPLY = 200000000;// 100% Release Jan 24th 2018
-  uint256 public AVAILABLE_FOUNDER_SUPPLY  = 150000000; // 25% Release Jan 24th, 2019 + 25% release yearly after
-  uint256 public AVAILABLE_AIRDROP_SUPPLY  = 100000000; // 10% Released Jan 24th, 2019 + 10% monthly after\
-  uint256 public AVAILABLE_BDMARKET_SUPPLY = 50000000;  // 100% Release Jan 24th 2018
-  uint256 public AVAILABLE_ADVISOR_SUPPLY  = 25000000;  // 100% Released on Sept 24th, 2018
-  uint256 public AVAILABLE_RESERVE_SUPPLY  = 475000000; // 10M Released on July 24th, 2018 - 10M montly after
+  enum AllocationType { PRESALE, FOUNDER, AIRDROP, ADVISOR, RESERVE }
+  uint256 public AVAILABLE_PRESALE_SUPPLY = 2625000000 * decimals; // 100% Release Jan 24th 2018
+  uint256 public AVAILABLE_FOUNDER_SUPPLY  = 150000000 * decimals; // 25% Release Jan 24th, 2019 + 25% release yearly after
+  uint256 public AVAILABLE_AIRDROP_SUPPLY  = 100000000 * decimals; // 10% Released Jan 24th, 2019 + 10% monthly after
+  uint256 public AVAILABLE_ADVISOR_SUPPLY  = 15000000 * decimals;  // 100% Released on August 24th, 2018
+  uint256 public AVAILABLE_RESERVE_SUPPLY  = 562500000 * decimals; // 10M Released every month after
+  uint256 public totalSupply = 1000000000 * decimals;
   uint256 grandTotalAllocated = 0;
   uint256 grandTotalClaimed = 0;
   uint256 startTime;
+  bool initialized;
 
   // Allocation with vesting information
   struct Allocation {
@@ -43,8 +44,11 @@ contract PolyDistribution is Ownable {
   /**
     * @dev Constructor function - Set the poly token address
     */
-  function PolyDistribution (address _polyTokenAddress) public {
+  function initializePolyDistribution (address _polyTokenAddress) public {
+    require(!initialized);
     POLY = PolyToken(_polyTokenAddress);
+    startTime = now + 10 minutes;
+    initialized = true;
   }
 
   /**
@@ -56,33 +60,30 @@ contract PolyDistribution is Ownable {
   function setAllocation (address _recipient, uint256 _totalAllocated, uint8 _supply) onlyOwner public {
     require(allocations[_recipient].totalAllocated == 0);
     require(_totalAllocated > 0);
+    require(startTime > 0);
     string memory fromSupply;
     if (_supply == 0) {
-      fromSupply = 'investor';
-      AVAILABLE_INVESTOR_SUPPLY.sub(_totalAllocated);
-      allocations[_recipient] = Allocation(uint8(AllocationType.INVESTOR), 0, 0, _totalAllocated, 0);
+      fromSupply = 'presale';
+      AVAILABLE_PRESALE_SUPPLY = AVAILABLE_PRESALE_SUPPLY.sub(_totalAllocated);
+      allocations[_recipient] = Allocation(uint8(AllocationType.PRESALE), 0, 0, _totalAllocated, 0);
     } else if (_supply == 1) {
       fromSupply = 'founder';
-      AVAILABLE_FOUNDER_SUPPLY.sub(_totalAllocated);
-      allocations[_recipient] = Allocation(uint8(AllocationType.FOUNDER), 1 years, 4 years, _totalAllocated, 0);
+      AVAILABLE_FOUNDER_SUPPLY = AVAILABLE_FOUNDER_SUPPLY.sub(_totalAllocated);
+      allocations[_recipient] = Allocation(uint8(AllocationType.FOUNDER), startTime + 1 years, startTime + 4 years, _totalAllocated, 0);
     } else if (_supply == 2) {
       fromSupply = 'airdrop';
-      AVAILABLE_AIRDROP_SUPPLY.sub(_totalAllocated);
-      allocations[_recipient] = Allocation(uint8(AllocationType.AIRDROP), 0, 1 years, _totalAllocated, 0);
-    } else if (_supply == 3) {
-      fromSupply = 'bdmarket';
-      AVAILABLE_BDMARKET_SUPPLY.sub(_totalAllocated);
-      allocations[_recipient] = Allocation(uint8(AllocationType.BDMARKET), 0, 0, _totalAllocated, 0);
-    } else if (_supply == 4) {
+      AVAILABLE_AIRDROP_SUPPLY = AVAILABLE_AIRDROP_SUPPLY.sub(_totalAllocated);
+      allocations[_recipient] = Allocation(uint8(AllocationType.AIRDROP), 0, startTime + 1 years, _totalAllocated, 0);
+    } if (_supply == 3) {
       fromSupply = 'advisor';
-      AVAILABLE_ADVISOR_SUPPLY.sub(_totalAllocated);
-      allocations[_recipient] = Allocation(uint8(AllocationType.ADVISOR), 215 days, 0, _totalAllocated, 0);
-    } else if (_supply == 5) {
+      AVAILABLE_ADVISOR_SUPPLY = AVAILABLE_ADVISOR_SUPPLY.sub(_totalAllocated);
+      allocations[_recipient] = Allocation(uint8(AllocationType.ADVISOR), startTime + 215 days, 0, _totalAllocated, 0);
+    } else if (_supply == 4) {
       fromSupply = 'reserve';
-      AVAILABLE_RESERVE_SUPPLY.sub(_totalAllocated);
-      allocations[_recipient] = Allocation(uint8(AllocationType.RESERVE), 100 days, 4 years, _totalAllocated, 0);
+      AVAILABLE_RESERVE_SUPPLY = AVAILABLE_RESERVE_SUPPLY.sub(_totalAllocated);
+      allocations[_recipient] = Allocation(uint8(AllocationType.RESERVE), startTime + 100 days, startTime + 4 years, _totalAllocated, 0);
     }
-    grandTotalAllocated.add(_totalAllocated);
+    grandTotalAllocated = grandTotalAllocated.add(_totalAllocated);
     LogNewAllocation(_recipient, fromSupply, _totalAllocated, grandTotalAllocated);
   }
 
@@ -101,7 +102,7 @@ contract PolyDistribution is Ownable {
       POLY.transfer(_recipient, availablePolyToClaim);
     } else {
       allocations[_recipient].amountClaimed = allocations[_recipient].totalAllocated;
-      grandTotalClaimed.add(allocations[_recipient].totalAllocated);
+      grandTotalClaimed = grandTotalClaimed.add(allocations[_recipient].totalAllocated);
       POLY.transfer(_recipient, allocations[_recipient].totalAllocated);
     }
     LogPolyClaimed(_recipient, allocations[_recipient].AllocationSupply, allocations[_recipient].amountClaimed, allocations[_recipient].totalAllocated, grandTotalClaimed);
