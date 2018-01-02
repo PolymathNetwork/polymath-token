@@ -59,6 +59,7 @@ contract PolyDistribution is Ownable {
   function setAllocation (address _recipient, uint256 _totalAllocated, uint8 _supply) onlyOwner public {
     require(allocations[_recipient].totalAllocated == 0);
     require(_totalAllocated > 0);
+    require(startTime > 0);
     string memory fromSupply;
     if (_supply == 0) {
       fromSupply = 'presale';
@@ -67,21 +68,21 @@ contract PolyDistribution is Ownable {
     } else if (_supply == 1) {
       fromSupply = 'founder';
       AVAILABLE_FOUNDER_SUPPLY = AVAILABLE_FOUNDER_SUPPLY.sub(_totalAllocated);
-      allocations[_recipient] = Allocation(uint8(AllocationType.FOUNDER), 1 years, 4 years, _totalAllocated, 0);
+      allocations[_recipient] = Allocation(uint8(AllocationType.FOUNDER), startTime + 1 years, startTime + 4 years, _totalAllocated, 0);
     } else if (_supply == 2) {
       fromSupply = 'airdrop';
       AVAILABLE_AIRDROP_SUPPLY = AVAILABLE_AIRDROP_SUPPLY.sub(_totalAllocated);
-      allocations[_recipient] = Allocation(uint8(AllocationType.AIRDROP), 0, 1 years, _totalAllocated, 0);
+      allocations[_recipient] = Allocation(uint8(AllocationType.AIRDROP), 0, startTime + 1 years, _totalAllocated, 0);
     } if (_supply == 3) {
       fromSupply = 'advisor';
       AVAILABLE_ADVISOR_SUPPLY = AVAILABLE_ADVISOR_SUPPLY.sub(_totalAllocated);
-      allocations[_recipient] = Allocation(uint8(AllocationType.ADVISOR), 215 days, 0, _totalAllocated, 0);
+      allocations[_recipient] = Allocation(uint8(AllocationType.ADVISOR), startTime + 215 days, 0, _totalAllocated, 0);
     } else if (_supply == 4) {
       fromSupply = 'reserve';
       AVAILABLE_RESERVE_SUPPLY = AVAILABLE_RESERVE_SUPPLY.sub(_totalAllocated);
-      allocations[_recipient] = Allocation(uint8(AllocationType.RESERVE), 100 days, 4 years, _totalAllocated, 0);
+      allocations[_recipient] = Allocation(uint8(AllocationType.RESERVE), startTime + 100 days, startTime + 4 years, _totalAllocated, 0);
     }
-    grandTotalAllocated.add(_totalAllocated);
+    grandTotalAllocated = grandTotalAllocated.add(_totalAllocated);
     LogNewAllocation(_recipient, fromSupply, _totalAllocated, grandTotalAllocated);
   }
 
@@ -100,7 +101,7 @@ contract PolyDistribution is Ownable {
       POLY.transfer(_recipient, availablePolyToClaim);
     } else {
       allocations[_recipient].amountClaimed = allocations[_recipient].totalAllocated;
-      grandTotalClaimed.add(allocations[_recipient].totalAllocated);
+      grandTotalClaimed = grandTotalClaimed.add(allocations[_recipient].totalAllocated);
       POLY.transfer(_recipient, allocations[_recipient].totalAllocated);
     }
     LogPolyClaimed(_recipient, allocations[_recipient].AllocationSupply, allocations[_recipient].amountClaimed, allocations[_recipient].totalAllocated, grandTotalClaimed);
