@@ -16,8 +16,9 @@ $('#submit-data').click(function(e) {
   if (ethaddress.length == 42) {
     $('#allocation-form').hide();
     $('#loading').fadeIn(500);
-    $.post('http://localhost:9000/airdrop/' + ethaddress, function(data) {
-      console.log(data);
+    $.post('https://polymath-api.herokuapp.com/airdrop/' + ethaddress, function(
+      data,
+    ) {
       if (data && data.address) {
         $('#loading').hide();
         $('#airdropResult').text(
