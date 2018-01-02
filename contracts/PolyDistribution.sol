@@ -17,7 +17,7 @@ contract PolyDistribution is Ownable {
 
   uint256 private constant decimals = 10**uint256(18);
   enum AllocationType { PRESALE, FOUNDER, AIRDROP, ADVISOR, RESERVE }
-  uint256 public AVAILABLE_PRESALE_SUPPLY = 2625000000 * decimals; // 100% Release Jan 24th 2018
+  uint256 public AVAILABLE_PRESALE_SUPPLY = 262500000 * decimals; // 100% Release Jan 24th 2018
   uint256 public AVAILABLE_FOUNDER_SUPPLY  = 150000000 * decimals; // 25% Release Jan 24th, 2019 + 25% release yearly after
   uint256 public AVAILABLE_AIRDROP_SUPPLY  = 100000000 * decimals; // 10% Released Jan 24th, 2019 + 10% monthly after
   uint256 public AVAILABLE_ADVISOR_SUPPLY  = 15000000 * decimals;  // 100% Released on August 24th, 2018
