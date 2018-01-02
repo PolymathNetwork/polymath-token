@@ -10,7 +10,7 @@
     "test": "truffle test",
     "compile": "truffle compile",
     "migrate-local": "truffle migrate --network=local --reset",
-    "migrate-ropsten": "truffle migrate --network=ropsten",
+    "migrate-ropsten": "truffle migrate --network=ropsten --reset",
     "flatten": "sol-merger './contracts/*.sol' ./flat"
   },
   "repository": {

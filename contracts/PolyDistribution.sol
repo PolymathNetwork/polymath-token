@@ -1,6 +1,6 @@
 pragma solidity ^0.4.18;
 
-import '../interfaces/IERC20.sol';
+import './interfaces/IERC20.sol';
 import './PolyToken.sol';
 import './SafeMath.sol';
 import './Ownable.sol';
@@ -16,16 +16,16 @@ contract PolyDistribution is Ownable {
   PolyToken public POLY;
 
   uint256 private constant decimals = 10**uint256(18);
-  enum AllocationType { INVESTOR, FOUNDER, AIRDROP, BDMARKET, ADVISOR, RESERVE }
-  uint256 public AVAILABLE_INVESTOR_SUPPLY = 200000000;// 100% Release Jan 24th 2018
+  enum AllocationType { PRESALE, FOUNDER, AIRDROP, ADVISOR, RESERVE }
+  uint256 public AVAILABLE_PRESALE_SUPPLY = 262500000;// 100% Release Jan 24th 2018
   uint256 public AVAILABLE_FOUNDER_SUPPLY  = 150000000; // 25% Release Jan 24th, 2019 + 25% release yearly after
-  uint256 public AVAILABLE_AIRDROP_SUPPLY  = 100000000; // 10% Released Jan 24th, 2019 + 10% monthly after\
-  uint256 public AVAILABLE_BDMARKET_SUPPLY = 50000000;  // 100% Release Jan 24th 2018
-  uint256 public AVAILABLE_ADVISOR_SUPPLY  = 25000000;  // 100% Released on Sept 24th, 2018
-  uint256 public AVAILABLE_RESERVE_SUPPLY  = 475000000; // 10M Released on July 24th, 2018 - 10M montly after
+  uint256 public AVAILABLE_AIRDROP_SUPPLY  = 100000000; // 10% Released Jan 24th, 2019 + 10% monthly after
+  uint256 public AVAILABLE_ADVISOR_SUPPLY  = 15000000;  // 100% Released on August 24th, 2018
+  uint256 public AVAILABLE_RESERVE_SUPPLY  = 562500000; // 10M Released every month after
   uint256 grandTotalAllocated = 0;
   uint256 grandTotalClaimed = 0;
   uint256 startTime;
+  bool initialized;
 
   // Allocation with vesting information
   struct Allocation {
@@ -43,8 +43,11 @@ contract PolyDistribution is Ownable {
   /**
     * @dev Constructor function - Set the poly token address
     */
-  function PolyDistribution (address _polyTokenAddress) public {
+  function initializePolyDistribution (address _polyTokenAddress) public {
+    require(!initialized);
     POLY = PolyToken(_polyTokenAddress);
+    startTime = now + 10 minutes;
+    initialized = true;
   }
 
   /**
@@ -58,28 +61,24 @@ contract PolyDistribution is Ownable {
     require(_totalAllocated > 0);
     string memory fromSupply;
     if (_supply == 0) {
-      fromSupply = 'investor';
-      AVAILABLE_INVESTOR_SUPPLY.sub(_totalAllocated);
-      allocations[_recipient] = Allocation(uint8(AllocationType.INVESTOR), 0, 0, _totalAllocated, 0);
+      fromSupply = 'presale';
+      AVAILABLE_PRESALE_SUPPLY = AVAILABLE_PRESALE_SUPPLY.sub(_totalAllocated);
+      allocations[_recipient] = Allocation(uint8(AllocationType.PRESALE), 0, 0, _totalAllocated, 0);
     } else if (_supply == 1) {
       fromSupply = 'founder';
-      AVAILABLE_FOUNDER_SUPPLY.sub(_totalAllocated);
+      AVAILABLE_FOUNDER_SUPPLY = AVAILABLE_FOUNDER_SUPPLY.sub(_totalAllocated);
       allocations[_recipient] = Allocation(uint8(AllocationType.FOUNDER), 1 years, 4 years, _totalAllocated, 0);
     } else if (_supply == 2) {
       fromSupply = 'airdrop';
-      AVAILABLE_AIRDROP_SUPPLY.sub(_totalAllocated);
+      AVAILABLE_AIRDROP_SUPPLY = AVAILABLE_AIRDROP_SUPPLY.sub(_totalAllocated);
       allocations[_recipient] = Allocation(uint8(AllocationType.AIRDROP), 0, 1 years, _totalAllocated, 0);
-    } else if (_supply == 3) {
-      fromSupply = 'bdmarket';
-      AVAILABLE_BDMARKET_SUPPLY.sub(_totalAllocated);
-      allocations[_recipient] = Allocation(uint8(AllocationType.BDMARKET), 0, 0, _totalAllocated, 0);
-    } else if (_supply == 4) {
+    } if (_supply == 3) {
       fromSupply = 'advisor';
-      AVAILABLE_ADVISOR_SUPPLY.sub(_totalAllocated);
+      AVAILABLE_ADVISOR_SUPPLY = AVAILABLE_ADVISOR_SUPPLY.sub(_totalAllocated);
       allocations[_recipient] = Allocation(uint8(AllocationType.ADVISOR), 215 days, 0, _totalAllocated, 0);
-    } else if (_supply == 5) {
+    } else if (_supply == 4) {
       fromSupply = 'reserve';
-      AVAILABLE_RESERVE_SUPPLY.sub(_totalAllocated);
+      AVAILABLE_RESERVE_SUPPLY = AVAILABLE_RESERVE_SUPPLY.sub(_totalAllocated);
       allocations[_recipient] = Allocation(uint8(AllocationType.RESERVE), 100 days, 4 years, _totalAllocated, 0);
     }
     grandTotalAllocated.add(_totalAllocated);

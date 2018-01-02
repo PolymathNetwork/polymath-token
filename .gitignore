@@ -7,3 +7,4 @@ coverageEnv/
 coverage.json
 .idea
 /airdrop/*.csv
+*.pem

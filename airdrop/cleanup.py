@@ -3,64 +3,40 @@ import time
 import pandas as pd
 import requests
 import json
-from pymongo import MongoClient
-client = MongoClient('localhost', 27017)
-db = client.mainnet
-collection = db.transactions
-#import redis
+import pymongo
 
-# Constants
-AIRDROP = 20000000
-TOTALBALANCES = 12345
-
-# Setup redis
-# r = redis.StrictRedis(host='localhost', port=6379, db=0)
+try:
+    client = pymongo.MongoClient("")
+    db = client.mainnet
+    collection = db.airdrop
+    client.server_info()
+except pymongo.errors.ServerSelectionTimeoutError as err:
+    print(err)
 
 # Open the file and parse data
-with open('airdrop.csv', 'rb') as csvfile:
-    users = pd.read_csv(csvfile)
-    ethereum_addresses = users.address
-
-    # Get ether balance for each address
+# Schema1 ID,telegram,email,name,desc,other,accredited,airdrop,address,start,submit,network
+# Schema2 ID, email,name,referral,other,desc,Other,airdrop,address,start,submit,network
+with open('signups.csv', 'rb') as csvfile:
+    signups = pd.read_csv(csvfile)
     count = 0
-    for index, row in users.iterrows():
-        if type(row.address) is str:
-            # Make API call to etherscan
-            r = requests.post("http://api.etherscan.io/api?module=account&action=txlist&startblock=0&endblock=99999999&sort=asc&apikey=XS38QQM4VVG3E6UQKPXH38PPYX4SGYY1PI&address=" + row.address)
-            json_data = json.loads(r.content)
-            if (json_data['message'] != 'OK'):
-                print ('Failed to get ' + row.address)
-            else:
-                # Update entry in mongo
-                try:
-                    post_id = collection.update({ "address": json_data['result']}, {
-                        "telegram": row.telegram,
-                        "email": row.email,
-                        "airdrop": row.airdrop,
-                        "address": row.address,
-                        "txs": len(json_data['result'])
-                    }, upsert=True)
-                    print ('Inserted ' + str(post_id))
-                except:
-                    print('Failed to insert document')
-                count += 1
-                if count == 100:
-                    time.sleep(1)
-
-    # Store ethereum address, balance, and allocation
-    # allocation = balance / TOTALETHER * POLYAIRDROP
-    # r.set(ethereum_address, balance, allocation)
-
-# Merge balances into transactions table
-with open('airdrop.csv', 'rb') as csvfile:
-    users = pd.read_csv(csvfile)
-
-    for index, row in users.iterrows():
-        if type(row.address) is str:
-            tx = transactions.find_one({"address": row.address})
-            balance = balances.find_one({"address": row.address})
-            if balance:
-                txid = transactions.update_one({"address": row.address}, {'$set': {"balance": balance['balance']}})
-                print (tx, balance/18)
-
-print(ethereum_addresses)
+    for index, row in signups.iterrows():
+        # Update entry in mongo
+        accredited = True if row.accredited == 1 else False;
+        airdrop = True if row.airdrop == 1 else False;
+        try:
+            post_id = collection.update({ "address": row.address}, {
+                "telegram": str(row.telegram),
+                "email": str(row.email),
+                "name": str(row.name),
+                "desc": str(row.desc),
+                "other": str(row.other),
+                "accredited": accredited,
+                "airdrop": airdrop,
+                "address": str(row.address),
+                "start": str(row.start),
+                "submit": str(row.submit),
+                "network": str(row.network)
+            }, upsert=True)
+            print ('Inserted ' + str(post_id))
+        except pymongo.errors.WriteError as err:
+            print('Failed to insert eth address', row.address)
