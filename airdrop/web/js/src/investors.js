@@ -22,14 +22,14 @@ $('#submit-data').click(function(e) {
       if (data && data.address) {
         $('#loading').hide();
         $('#airdropResult').text(
-          'Congratulations, you are eligible for 100 POLY tokens! Stay tuned for details on the token distribution on our telegram.',
+          'Congratulations, you successfully signed up to the airdrop! Stay tuned for details on the token distribution on our telegram.',
         );
         $('#airdropResult').show();
         $('#allocation-form').fadeIn(500);
         $('#submit-data').hide();
       } else {
         $('#airdropResult').text(
-          'No allocation found. You must have registered for the airdrop (or participated in the presale) to be eligible for an allocation.',
+          'No allocation found. You must have registered for the airdrop to be eligible for an allocation.',
         );
         $('#loading').hide();
         $('#airdropResult').show();
