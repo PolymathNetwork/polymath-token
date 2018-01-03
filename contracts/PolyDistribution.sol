@@ -17,12 +17,12 @@ contract PolyDistribution is Ownable {
 
   uint256 private constant decimals = 10**uint256(18);
   enum AllocationType { PRESALE, FOUNDER, AIRDROP, ADVISOR, RESERVE }
-  uint256 public AVAILABLE_PRESALE_SUPPLY = 262500000 * decimals; // 100% Release Jan 24th 2018
+  uint256 public AVAILABLE_TOTAL_SUPPLY    = 1000000000 * decimals;
+  uint256 public AVAILABLE_PRESALE_SUPPLY  = 255000000 * decimals; // 100% Release Jan 24th 2018
   uint256 public AVAILABLE_FOUNDER_SUPPLY  = 150000000 * decimals; // 25% Release Jan 24th, 2019 + 25% release yearly after
-  uint256 public AVAILABLE_AIRDROP_SUPPLY  = 10000000 * decimals; // 10% Released Jan 24th, 2019 + 10% monthly after
+  uint256 public AVAILABLE_AIRDROP_SUPPLY  = 100000000 * decimals; // 10% Released Jan 24th, 2019 + 10% monthly after
   uint256 public AVAILABLE_ADVISOR_SUPPLY  = 15000000 * decimals;  // 100% Released on August 24th, 2018
-  uint256 public AVAILABLE_RESERVE_SUPPLY  = 562500000 * decimals; // 10M Released every month after
-  uint256 public totalSupply = 1000000000 * decimals;
+  uint256 public AVAILABLE_RESERVE_SUPPLY  = 480000000 * decimals; // 10M Released every month after
   uint256 grandTotalAllocated = 0;
   uint256 grandTotalClaimed = 0;
   uint256 startTime;
@@ -30,8 +30,8 @@ contract PolyDistribution is Ownable {
   // Allocation with vesting information
   struct Allocation {
     uint8 AllocationSupply; // Type of allocation
-    uint256 cliffDuration;  // Tokens are locked until
     uint256 endVesting;     // This is when the tokens are fully unvested
+    uint256 endCliff;       // Tokens are locked until
     uint256 totalAllocated; // Total tokens allocated
     uint256 amountClaimed;  // Total tokens claimed
   }
@@ -43,10 +43,12 @@ contract PolyDistribution is Ownable {
   /**
     * @dev Constructor function - Set the poly token address
     */
-  function PolyDistribution() public {
-    startTime = now + 10 minutes;
-    POLY = new PolyToken(this);
-  }
+    function PolyDistribution(uint256 _startTime) public {
+      require(_startTime >= now);
+      require(AVAILABLE_TOTAL_SUPPLY == AVAILABLE_PRESALE_SUPPLY.add(AVAILABLE_FOUNDER_SUPPLY).add(AVAILABLE_AIRDROP_SUPPLY).add(AVAILABLE_ADVISOR_SUPPLY).add(AVAILABLE_RESERVE_SUPPLY));
+      startTime = _startTime;
+      POLY = new PolyToken(this);
+    }
 
   /**
     * @dev Allow the owner of the contract to assign a new allocation
@@ -56,6 +58,8 @@ contract PolyDistribution is Ownable {
     */
   function setAllocation (address _recipient, uint256 _totalAllocated, uint8 _supply) onlyOwner public {
     require(allocations[_recipient].totalAllocated == 0);
+    require(_supply >= 0 && _supply <= 4);
+    require(_recipient != address(0));
     require(_totalAllocated > 0);
     require(startTime > 0);
     string memory fromSupply;
@@ -89,16 +93,16 @@ contract PolyDistribution is Ownable {
     */
   function transferTokens (address _recipient) public {
     require(allocations[_recipient].amountClaimed < allocations[_recipient].totalAllocated);
-    require(block.timestamp >= startTime + allocations[_recipient].cliffDuration);
+    require(now >= allocations[_recipient].endCliff);
     // Determine the available amount that can be claimed
     if (allocations[_recipient].endVesting > now) {
-      uint256 availableAtTime = allocations[_recipient].totalAllocated.mul(now).div(allocations[_recipient].endVesting);
+      uint256 availableAtTime = allocations[_recipient].totalAllocated.mul(now.sub(startTime)).div(allocations[_recipient].endVesting.sub(startTime));
       uint256 availablePolyToClaim = availableAtTime.sub(allocations[_recipient].amountClaimed);
-      grandTotalClaimed.add(availablePolyToClaim);
+      grandTotalClaimed = grandTotalClaimed.add(availablePolyToClaim);
       allocations[_recipient].amountClaimed = availableAtTime;
       POLY.transfer(_recipient, availablePolyToClaim);
     } else {
-      allocations[_recipient].amountClaimed = allocations[_recipient].totalAllocated;
+      allocations[_recipient].amountClaimed = allocations[_recipient].totalAllocated - allocations[_recipient].amountClaimed;
       grandTotalClaimed = grandTotalClaimed.add(allocations[_recipient].totalAllocated);
       POLY.transfer(_recipient, allocations[_recipient].totalAllocated);
     }
