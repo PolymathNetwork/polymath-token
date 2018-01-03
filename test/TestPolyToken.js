@@ -3,7 +3,7 @@ const Web3 = require('web3')
 
 var BigNumber = require('bignumber.js')
 
-const web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8555")) // Hardcoded development port
+const web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545")) // Hardcoded development port
 
 const logTitle = function (title) {
   console.log("*****************************************");
@@ -40,12 +40,12 @@ contract('PolyToken', function(accounts) {
 
     it("Name", async function () {
       let tokenName = await polyToken.name({from:accounts[0]});
-      assert.equal(tokenName.toString(),TOKEN_NAME);
+      assert.equal(tokenName,TOKEN_NAME);
     });
 
     it("Symbol", async function () {
       let tokenSymbol = await polyToken.symbol({from:accounts[0]});
-      assert.equal(tokenSymbol.toString(),TOKEN_SYMBOL);
+      assert.equal(tokenSymbol,TOKEN_SYMBOL);
     });
 
     it("Decimals", async function () {
