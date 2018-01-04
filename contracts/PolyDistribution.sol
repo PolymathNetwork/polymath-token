@@ -8,7 +8,7 @@ import './Ownable.sol';
 /**
  * @title POLY token initial distribution
  *
- * @dev Distribute investor, airdrop, reserve, and founder tokens
+ * @dev Distribute purchasers, airdrop, reserve, and founder tokens
  */
 contract PolyDistribution is Ownable {
   using SafeMath for uint256;
