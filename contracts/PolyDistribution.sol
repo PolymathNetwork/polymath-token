@@ -62,7 +62,6 @@ contract PolyDistribution is Ownable {
     require(allocations[_recipient].totalAllocated == 0 && _totalAllocated > 0);
     require(_supply >= 0 && _supply <= 5);
     require(_recipient != address(0));
-    require(startTime > 0);
     if (_supply == 0) {
       AVAILABLE_PRESALE_SUPPLY = AVAILABLE_PRESALE_SUPPLY.sub(_totalAllocated);
       allocations[_recipient] = Allocation(uint8(AllocationType.PRESALE), 0, 0, _totalAllocated, 0);
@@ -110,7 +109,7 @@ contract PolyDistribution is Ownable {
   }
 
   // Prevent accidental ether payments to the contract
-  function () public {
+  function () public payable {
     revert();
   }
 
