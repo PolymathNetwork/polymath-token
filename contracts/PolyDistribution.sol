@@ -31,8 +31,8 @@ contract PolyDistribution is Ownable {
   // Allocation with vesting information
   struct Allocation {
     uint8 AllocationSupply; // Type of allocation
-    uint256 endVesting;     // This is when the tokens are fully unvested
     uint256 endCliff;       // Tokens are locked until
+    uint256 endVesting;     // This is when the tokens are fully unvested
     uint256 totalAllocated; // Total tokens allocated
     uint256 amountClaimed;  // Total tokens claimed
   }
@@ -90,6 +90,9 @@ contract PolyDistribution is Ownable {
       AVAILABLE_RESERVE_SUPPLY = AVAILABLE_RESERVE_SUPPLY.sub(_totalAllocated);
       allocations[_recipient] = Allocation(uint8(AllocationType.RESERVE), startTime + 182 days, startTime + 4 years, _totalAllocated, 0);
     }
+
+    AVAILABLE_TOTAL_SUPPLY = AVAILABLE_TOTAL_SUPPLY.sub(_totalAllocated);
+
     grandTotalAllocated = grandTotalAllocated.add(_totalAllocated);
     LogNewAllocation(_recipient, fromSupply, _totalAllocated, grandTotalAllocated);
   }
