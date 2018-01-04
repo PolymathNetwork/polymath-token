@@ -102,7 +102,7 @@ contract PolyDistribution is Ownable {
       // Transfer total allocated (minus previously claimed tokens)
       newAmountClaimed = allocations[_recipient].totalAllocated;
     }
-    uint256 tokensToTransfer = allocations[_recipient].totalAllocated.sub(allocations[_recipient].amountClaimed);
+    uint256 tokensToTransfer = newAmountClaimed.sub(allocations[_recipient].amountClaimed);
     allocations[_recipient].amountClaimed = newAmountClaimed;
     POLY.transfer(_recipient, tokensToTransfer);
     grandTotalClaimed = grandTotalClaimed.add(tokensToTransfer);
