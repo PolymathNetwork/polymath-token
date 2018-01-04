@@ -61,7 +61,7 @@ contract('PolyDistribution', function(accounts) {
   let account_founder2  = accounts[3];
   let account_airdrop1  = accounts[4];
   let account_airdrop2  = accounts[5];
-  let account_airdrop3  = accounts[6];
+  let account_bonus     = accounts[6];
   let account_advisor1  = accounts[7];
   let account_advisor2  = accounts[8];
   let account_reserve   = accounts[9];
@@ -105,6 +105,85 @@ contract('PolyDistribution', function(accounts) {
       return Math.floor((_allocation[3].toNumber() * (_currentTime - _contractStartTime.toNumber())) / (_allocation[2].toNumber() - _contractStartTime.toNumber()));
   }
 
+  async function doAllocationTests(_allocationType, _tokenAllocation, _accountToUse) {
+    it("should allocate "+ _allocationType +" tokens", async function () {
+
+      let oldPresaleSupply;
+      let tokenAllocation = _tokenAllocation;
+      let accountToUse = _accountToUse;
+      let allocationTypeNum;
+
+      switch (_allocationType) {
+        case "PRESALE":
+            oldPresaleSupply = await polyDistribution.AVAILABLE_PRESALE_SUPPLY({from:account_owner});
+            allocationTypeNum = 0;
+          break;
+        case "FOUNDER":
+            oldPresaleSupply = await polyDistribution.AVAILABLE_FOUNDER_SUPPLY({from:account_owner});
+            allocationTypeNum = 1;
+          break;
+        case "AIRDROP":
+            oldPresaleSupply = await polyDistribution.AVAILABLE_AIRDROP_SUPPLY({from:account_owner});
+            allocationTypeNum = 2;
+          break;
+        case "ADVISOR":
+            oldPresaleSupply = await polyDistribution.AVAILABLE_ADVISOR_SUPPLY({from:account_owner});
+            allocationTypeNum = 3;
+          break;
+        case "BONUS":
+            oldPresaleSupply = await polyDistribution.AVAILABLE_BONUS_SUPPLY({from:account_owner});
+            allocationTypeNum = 4;
+          break;
+        case "RESERVE":
+            oldPresaleSupply = await polyDistribution.AVAILABLE_RESERVE_SUPPLY({from:account_owner});
+            allocationTypeNum = 5;
+          break;
+        default:
+
+      }
+
+      await polyDistribution.setAllocation(accountToUse,tokenAllocation,allocationTypeNum,{from:account_owner});
+      let allocation = await polyDistribution.allocations(accountToUse,{from:account_owner});
+
+      setAllocationStruct(allocation);
+
+      // Allocation must be equal to the passed tokenAllocation
+      assert.equal(allocationStruct.totalAllocated, tokenAllocation);
+      assert.equal(allocationStruct.AllocationSupply, allocationTypeNum);
+
+      console.log(allocationStruct);
+
+      let newPresaleSupply
+
+      switch (_allocationType) {
+        case "PRESALE":
+          newPresaleSupply = await polyDistribution.AVAILABLE_PRESALE_SUPPLY({from:account_owner});
+          break;
+        case "FOUNDER":
+          newPresaleSupply = await polyDistribution.AVAILABLE_FOUNDER_SUPPLY({from:account_owner});
+          break;
+        case "AIRDROP":
+          newPresaleSupply = await polyDistribution.AVAILABLE_AIRDROP_SUPPLY({from:account_owner});
+          break;
+        case "ADVISOR":
+          newPresaleSupply = await polyDistribution.AVAILABLE_ADVISOR_SUPPLY({from:account_owner});
+          break;
+        case "BONUS":
+          newPresaleSupply = await polyDistribution.AVAILABLE_BONUS_SUPPLY({from:account_owner});
+          break
+        case "RESERVE":
+          newPresaleSupply = await polyDistribution.AVAILABLE_RESERVE_SUPPLY({from:account_owner});
+          break;
+        default:
+
+      }
+
+      // Supply must match the new supply available
+      assert.equal(newPresaleSupply.toNumber(),oldPresaleSupply.toNumber() + tokenAllocation);
+
+    });
+  };
+
   before(async() => {
         polyDistribution = await PolyDistribution.new(_startTime,{from:accounts[0]});
         polyTokenAddress = await polyDistribution.POLY({from:accounts[0]});
@@ -132,6 +211,7 @@ contract('PolyDistribution', function(accounts) {
 
       let oldTotalSupply;
       let grantTotalAllocationSum = new BigNumber(0);
+      let tokensAllocated;
 
       before(async() => {
         oldTotalSupply = await polyDistribution.AVAILABLE_TOTAL_SUPPLY({from:account_owner});
@@ -139,209 +219,109 @@ contract('PolyDistribution', function(accounts) {
 
       describe("PRESALE Allocation", async function () {
 
-        it("should allocate PRESALE tokens", async function () {
+        let tokensToAllocate = 1000;
+        doAllocationTests("PRESALE",tokensToAllocate,account_presale);
 
-          let oldPresaleSupply = await polyDistribution.AVAILABLE_PRESALE_SUPPLY({from:account_owner});
-          let tokenAllocation = 1000;
-
-          await polyDistribution.setAllocation(account_presale,tokenAllocation,0,{from:account_owner});
-          let allocation = await polyDistribution.allocations(account_presale,{from:account_owner});
-
-          setAllocationStruct(allocation);
-
-          // Allocation must be equal to the passed tokenAllocation
-          assert.equal(allocationStruct.totalAllocated, tokenAllocation);
-          assert.equal(allocationStruct.AllocationSupply, 0);
-
-          console.log(allocationStruct);
-          let newPresaleSupply = await polyDistribution.AVAILABLE_PRESALE_SUPPLY({from:account_owner});
-
-          oldTotalSupply = new BigNumber(oldTotalSupply.minus(tokenAllocation));
-          grantTotalAllocationSum = new BigNumber(grantTotalAllocationSum.plus(tokenAllocation));
-          // Supply must match the new supply available
-          assert.equal(newPresaleSupply.toNumber(),oldPresaleSupply.toNumber() + tokenAllocation);
-
+        after(async() => {
+          oldTotalSupply = new BigNumber(oldTotalSupply.minus(tokensToAllocate));
+          grantTotalAllocationSum = new BigNumber(grantTotalAllocationSum.plus(tokensToAllocate));
         });
       });
 
-      describe("FOUNDER Allocation", async function () {
+      describe("FOUNDER 1 Allocation", async function () {
 
-        it("should allocate FOUNDER tokens for founder 1", async function () {
+        let tokensToAllocate = 50000;
+        doAllocationTests("FOUNDER",tokensToAllocate,account_founder1);
 
-          let oldFounderSupply = await polyDistribution.AVAILABLE_FOUNDER_SUPPLY({from:account_owner});
-          let tokenAllocation = 50000;
-
-          await polyDistribution.setAllocation(account_founder1,tokenAllocation,1,{from:account_owner});
-          let allocation = await polyDistribution.allocations(account_founder1,{from:account_owner});
-
-          setAllocationStruct(allocation);
-
-          // Allocation must be equal to the passed tokenAllocation
-          assert.equal(allocationStruct.totalAllocated, tokenAllocation);
-          assert.equal(allocationStruct.AllocationSupply, 1);
-
-          console.log(allocationStruct);
-          let newFounderSupply = await polyDistribution.AVAILABLE_FOUNDER_SUPPLY({from:account_owner});
-
-          oldTotalSupply = new BigNumber(oldTotalSupply.minus(tokenAllocation));
-          grantTotalAllocationSum = new BigNumber(grantTotalAllocationSum.plus(tokenAllocation));
-          // Supply must match the new supply available
-          assert.equal(newFounderSupply.toNumber(),oldFounderSupply.toNumber() + tokenAllocation);
-
+        after(async() => {
+          oldTotalSupply = new BigNumber(oldTotalSupply.minus(tokensToAllocate));
+          grantTotalAllocationSum = new BigNumber(grantTotalAllocationSum.plus(tokensToAllocate));
         });
 
-        it("should allocate FOUNDER tokens for founder 2", async function () {
-
-          let oldFounderSupply = await polyDistribution.AVAILABLE_FOUNDER_SUPPLY({from:account_owner});
-          let tokenAllocation = 175000;
-
-          await polyDistribution.setAllocation(account_founder2,tokenAllocation,1,{from:account_owner});
-          let allocation = await polyDistribution.allocations(account_founder2,{from:account_owner});
-
-          setAllocationStruct(allocation);
-
-          // Allocation must be equal to the passed tokenAllocation
-          assert.equal(allocationStruct.totalAllocated, tokenAllocation);
-          assert.equal(allocationStruct.AllocationSupply, 1);
-
-          console.log(allocationStruct);
-          let newFounderSupply = await polyDistribution.AVAILABLE_FOUNDER_SUPPLY({from:account_owner});
-
-          oldTotalSupply = new BigNumber(oldTotalSupply.minus(tokenAllocation));
-          grantTotalAllocationSum = new BigNumber(grantTotalAllocationSum.plus(tokenAllocation));
-          // Supply must match the new supply available
-          assert.equal(newFounderSupply.toNumber(),oldFounderSupply.toNumber() + tokenAllocation);
-
-        });
       });
 
-      describe("AIRDROP Allocation", async function () {
+      describe("FOUNDER 2 Allocation", async function () {
 
-        it("should allocate AIRDROP tokens for airdrop 1", async function () {
+        let tokensToAllocate = 175000;
+        doAllocationTests("FOUNDER",tokensToAllocate,account_founder2);
 
-          let oldAirdropSupply = await polyDistribution.AVAILABLE_AIRDROP_SUPPLY({from:account_owner});
-          let tokenAllocation = 50;
-
-          await polyDistribution.setAllocation(account_airdrop1,tokenAllocation,2,{from:account_owner});
-          let allocation = await polyDistribution.allocations(account_airdrop1,{from:account_owner});
-
-          setAllocationStruct(allocation);
-
-          // Allocation must be equal to the passed tokenAllocation
-          assert.equal(allocationStruct.totalAllocated, tokenAllocation);
-          assert.equal(allocationStruct.AllocationSupply, 2);
-
-          console.log(allocationStruct);
-          let newAirdropSupply = await polyDistribution.AVAILABLE_AIRDROP_SUPPLY({from:account_owner});
-
-          oldTotalSupply = new BigNumber(oldTotalSupply.minus(tokenAllocation));
-          grantTotalAllocationSum = new BigNumber(grantTotalAllocationSum.plus(tokenAllocation));
-          // Supply must match the new supply available
-          assert.equal(newAirdropSupply.toNumber(),oldAirdropSupply.toNumber() + tokenAllocation);
-
+        after(async() => {
+          oldTotalSupply = new BigNumber(oldTotalSupply.minus(tokensToAllocate));
+          grantTotalAllocationSum = new BigNumber(grantTotalAllocationSum.plus(tokensToAllocate));
         });
 
-        it("should allocate AIRDROP tokens for airdrop 2", async function () {
-
-          let oldAirdropSupply = await polyDistribution.AVAILABLE_AIRDROP_SUPPLY({from:account_owner});
-          let tokenAllocation = 75;
-
-          await polyDistribution.setAllocation(account_airdrop2,tokenAllocation,2,{from:account_owner});
-          let allocation = await polyDistribution.allocations(account_airdrop2,{from:account_owner});
-
-          setAllocationStruct(allocation);
-
-          // Allocation must be equal to the passed tokenAllocation
-          assert.equal(allocationStruct.totalAllocated, tokenAllocation);
-          assert.equal(allocationStruct.AllocationSupply, 2);
-
-          console.log(allocationStruct);
-          let newAirdropSupply = await polyDistribution.AVAILABLE_AIRDROP_SUPPLY({from:account_owner});
-
-          oldTotalSupply = new BigNumber(oldTotalSupply.minus(tokenAllocation));
-          grantTotalAllocationSum = new BigNumber(grantTotalAllocationSum.plus(tokenAllocation));
-          // Supply must match the new supply available
-          assert.equal(newAirdropSupply.toNumber(),oldAirdropSupply.toNumber() + tokenAllocation);
-
-        });
       });
 
-      describe("ADVISOR Allocation", async function () {
+      describe("AIRDROP 1 Allocation", async function () {
 
-        it("should allocate ADVISOR tokens for advisor 1", async function () {
+        let tokensToAllocate = 50;
+        doAllocationTests("AIRDROP",tokensToAllocate,account_airdrop1);
 
-          let oldAdvisorSupply = await polyDistribution.AVAILABLE_ADVISOR_SUPPLY({from:account_owner});
-          let tokenAllocation = 3333;
-
-          await polyDistribution.setAllocation(account_advisor1,tokenAllocation,3,{from:account_owner});
-          let allocation = await polyDistribution.allocations(account_advisor1,{from:account_owner});
-
-          setAllocationStruct(allocation);
-
-          // Allocation must be equal to the passed tokenAllocation
-          assert.equal(allocationStruct.totalAllocated, tokenAllocation);
-          assert.equal(allocationStruct.AllocationSupply, 3);
-
-          console.log(allocationStruct);
-          let newAdvisorSupply = await polyDistribution.AVAILABLE_ADVISOR_SUPPLY({from:account_owner});
-
-          oldTotalSupply = new BigNumber(oldTotalSupply.minus(tokenAllocation));
-          grantTotalAllocationSum = new BigNumber(grantTotalAllocationSum.plus(tokenAllocation));
-          // Supply must match the new supply available
-          assert.equal(newAdvisorSupply.toNumber(),oldAdvisorSupply.toNumber() + tokenAllocation);
-
+        after(async() => {
+          oldTotalSupply = new BigNumber(oldTotalSupply.minus(tokensToAllocate));
+          grantTotalAllocationSum = new BigNumber(grantTotalAllocationSum.plus(tokensToAllocate));
         });
 
-        it("should allocate ADVISOR tokens for advisor 2", async function () {
+      });
 
-          let oldAdvisorSupply = await polyDistribution.AVAILABLE_ADVISOR_SUPPLY({from:account_owner});
-          let tokenAllocation = 7777;
+      describe("AIRDROP 2 Allocation", async function () {
 
-          await polyDistribution.setAllocation(account_advisor2,tokenAllocation,3,{from:account_owner});
-          let allocation = await polyDistribution.allocations(account_advisor2,{from:account_owner});
+        let tokensToAllocate = 75;
+        doAllocationTests("AIRDROP",tokensToAllocate,account_airdrop2);
 
-          setAllocationStruct(allocation);
-
-          // Allocation must be equal to the passed tokenAllocation
-          assert.equal(allocationStruct.totalAllocated, tokenAllocation);
-          assert.equal(allocationStruct.AllocationSupply, 3);
-
-          console.log(allocationStruct);
-          let newAdvisorSupply = await polyDistribution.AVAILABLE_ADVISOR_SUPPLY({from:account_owner});
-
-          oldTotalSupply = new BigNumber(oldTotalSupply.minus(tokenAllocation));
-          grantTotalAllocationSum = new BigNumber(grantTotalAllocationSum.plus(tokenAllocation));
-          // Supply must match the new supply available
-          assert.equal(newAdvisorSupply.toNumber(),oldAdvisorSupply.toNumber() + tokenAllocation);
-
+        after(async() => {
+          oldTotalSupply = new BigNumber(oldTotalSupply.minus(tokensToAllocate));
+          grantTotalAllocationSum = new BigNumber(grantTotalAllocationSum.plus(tokensToAllocate));
         });
+
+      });
+
+      describe("ADVISOR 1 Allocation", async function () {
+
+        let tokensToAllocate = 3333;
+        doAllocationTests("ADVISOR",tokensToAllocate,account_advisor1);
+
+        after(async() => {
+          oldTotalSupply = new BigNumber(oldTotalSupply.minus(tokensToAllocate));
+          grantTotalAllocationSum = new BigNumber(grantTotalAllocationSum.plus(tokensToAllocate));
+        });
+
+      });
+
+      describe("ADVISOR 2 Allocation", async function () {
+
+        let tokensToAllocate = 7777;
+        doAllocationTests("ADVISOR",tokensToAllocate,account_advisor2);
+
+        after(async() => {
+          oldTotalSupply = new BigNumber(oldTotalSupply.minus(tokensToAllocate));
+          grantTotalAllocationSum = new BigNumber(grantTotalAllocationSum.plus(tokensToAllocate));
+        });
+
+      });
+
+      describe("BONUS Allocation", async function () {
+
+        let tokensToAllocate = 5000;
+        doAllocationTests("BONUS",tokensToAllocate,account_bonus);
+
+        after(async() => {
+          oldTotalSupply = new BigNumber(oldTotalSupply.minus(tokensToAllocate));
+          grantTotalAllocationSum = new BigNumber(grantTotalAllocationSum.plus(tokensToAllocate));
+        });
+
       });
 
       describe("RESERVE Allocation", async function () {
 
-        it("should allocate RESERVE tokens", async function () {
+        let tokensToAllocate = 1000;
+        doAllocationTests("RESERVE",tokensToAllocate,account_reserve);
 
-          let oldReserveSupply = await polyDistribution.AVAILABLE_RESERVE_SUPPLY({from:account_owner});
-          let tokenAllocation = 1000;
-
-          await polyDistribution.setAllocation(account_reserve,tokenAllocation,4,{from:account_owner});
-          let allocation = await polyDistribution.allocations(account_reserve,{from:account_owner});
-
-          setAllocationStruct(allocation);
-
-          // Allocation must be equal to the passed tokenAllocation
-          assert.equal(allocationStruct.totalAllocated, tokenAllocation);
-          assert.equal(allocationStruct.AllocationSupply, 4);
-
-          console.log(allocationStruct);
-          let newReserveSupply = await polyDistribution.AVAILABLE_RESERVE_SUPPLY({from:account_owner});
-
-          oldTotalSupply = new BigNumber(oldTotalSupply.minus(tokenAllocation));
-          grantTotalAllocationSum = new BigNumber(grantTotalAllocationSum.plus(tokenAllocation));
-          // Supply must match the new supply available
-          assert.equal(newReserveSupply.toNumber(),oldReserveSupply.toNumber() + tokenAllocation);
-
+        after(async() => {
+          oldTotalSupply = new BigNumber(oldTotalSupply.minus(tokensToAllocate));
+          grantTotalAllocationSum = new BigNumber(grantTotalAllocationSum.plus(tokensToAllocate));
         });
+
       });
 
       describe("Allocation post tests", async function () {
