@@ -1,8 +1,11 @@
-# Polymath (POLY) Token Distribution Contracts
+# Polymath (POLY) Token Distribution
 
-The smart contracts for the [Polymath (POLY)](https://polymath.network) token
-distribution used to allocate tokens to purchasers, advisors, reserve, community
-members, and founders.
+<img src="https://travis-ci.org/PolymathNetwork/polymath-token-distribution.svg?branch=master"/>
+<img src="https://img.shields.io/badge/25k+-telegram-blue.svg" href="https://t.me/polymathnetwork">
+
+The Ethereum contracts for the [Polymath](https://polymath.network) (POLY) token
+distribution. The primary purpose is to allocate tokens to purchasers, advisors,
+reserve, community members, and founders.
 
 ![Polymath](Polymath.png)
 
