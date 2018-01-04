@@ -57,10 +57,11 @@ contract PolyToken is IERC20 {
   using SafeMath for uint256;
 
   // Poly Token parameters
-  uint256 public totalSupply = 1000000000;
   string public name = 'Polymath';
   string public symbol = 'POLY';
-  uint8 public decimals = 18;
+  uint8 public constant decimals = 18;
+  uint256 public constant decimalFactor = 10 ** uint256(decimals);
+  uint256 public totalSupply = 1000000000 * decimalFactor;
   mapping (address => uint256) balances;
   mapping (address => mapping (address => uint256)) internal allowed;
 
@@ -229,37 +230,41 @@ contract PolyDistribution is Ownable {
   PolyToken public POLY;
 
   uint256 private constant decimals = 10**uint256(18);
-  enum AllocationType { PRESALE, FOUNDER, AIRDROP, BDMARKET, ADVISOR, RESERVE }
-  uint256 public AVAILABLE_PRESALE_SUPPLY = 200000000;// 100% Release Jan 24th 2018
-  uint256 public AVAILABLE_FOUNDER_SUPPLY  = 150000000; // 25% Release Jan 24th, 2019 + 25% release yearly after
-  uint256 public AVAILABLE_AIRDROP_SUPPLY  = 100000000; // 10% Released Jan 24th, 2019 + 10% monthly after\
-  uint256 public AVAILABLE_BDMARKET_SUPPLY = 50000000;  // 100% Release Jan 24th 2018
-  uint256 public AVAILABLE_ADVISOR_SUPPLY  = 25000000;  // 100% Released on Sept 24th, 2018
-  uint256 public AVAILABLE_RESERVE_SUPPLY  = 475000000; // 10M Released on July 24th, 2018 - 10M montly after
-  uint256 grandTotalAllocated = 0;
-  uint256 grandTotalClaimed = 0;
-  uint256 startTime;
+  enum AllocationType { PRESALE, FOUNDER, AIRDROP, ADVISOR, BONUS, RESERVE }
+  uint256 public AVAILABLE_TOTAL_SUPPLY    = 1000000000 * decimals;
+  uint256 public AVAILABLE_PRESALE_SUPPLY  = 240000000 * decimals; // 100% Released on Token Distribution (TD)
+  uint256 public AVAILABLE_FOUNDER_SUPPLY  = 150000000 * decimals; // 25% Released TD +1 year + 100% released TD +4 years
+  uint256 public AVAILABLE_AIRDROP_SUPPLY  = 10000000 * decimals;  // 10% Released on TD
+  uint256 public AVAILABLE_ADVISOR_SUPPLY  = 25000000 * decimals;  // 100% Released on TD +
+  uint256 public AVAILABLE_BONUS_SUPPLY    = 80000000 * decimals;  //
+  uint256 public AVAILABLE_RESERVE_SUPPLY  = 495000000 * decimals; // 10M Released every month after
+  uint256 public grandTotalAllocated = 0;
+  uint256 public grandTotalClaimed = 0;
+  uint256 public startTime;
 
   // Allocation with vesting information
   struct Allocation {
     uint8 AllocationSupply; // Type of allocation
-    uint256 cliffDuration;  // Tokens are locked until
+    uint256 endCliff;       // Tokens are locked until
     uint256 endVesting;     // This is when the tokens are fully unvested
     uint256 totalAllocated; // Total tokens allocated
     uint256 amountClaimed;  // Total tokens claimed
   }
   mapping (address => Allocation) public allocations;
 
-  event LogNewAllocation(address _recipient, string _fromSupply, uint256 _totalAllocated, uint256 _grandTotalAllocated);
+  event LogNewAllocation(address _recipient, uint8 _fromSupply, uint256 _totalAllocated, uint256 _grandTotalAllocated);
   event LogPolyClaimed(address _recipient, uint8 _fromSupply, uint256 _amountClaimed, uint256 _totalAllocated, uint256 _grandTotalClaimed);
 
   /**
     * @dev Constructor function - Set the poly token address
+    * @param _startTime The time when PolyDistribution goes live
     */
-  function PolyDistribution (address _polyTokenAddress) public {
-    POLY = PolyToken(_polyTokenAddress);
-    startTime = now + 10 minutes;
-  }
+    function PolyDistribution(uint256 _startTime) public {
+      require(_startTime >= now);
+      require(AVAILABLE_TOTAL_SUPPLY == AVAILABLE_PRESALE_SUPPLY.add(AVAILABLE_FOUNDER_SUPPLY).add(AVAILABLE_AIRDROP_SUPPLY).add(AVAILABLE_ADVISOR_SUPPLY).add(AVAILABLE_BONUS_SUPPLY).add(AVAILABLE_RESERVE_SUPPLY));
+      startTime = _startTime;
+      POLY = new PolyToken(this);
+    }
 
   /**
     * @dev Allow the owner of the contract to assign a new allocation
@@ -268,62 +273,53 @@ contract PolyDistribution is Ownable {
     * @param _supply The POLY supply the allocation will be taken from
     */
   function setAllocation (address _recipient, uint256 _totalAllocated, uint8 _supply) onlyOwner public {
-    require(allocations[_recipient].totalAllocated == 0);
-    require(_totalAllocated > 0);
-    string memory fromSupply;
+    require(allocations[_recipient].totalAllocated == 0 && _totalAllocated > 0);
+    require(_supply >= 0 && _supply <= 5);
+    require(_recipient != address(0));
     if (_supply == 0) {
-      fromSupply = 'presale';
-      AVAILABLE_PRESALE_SUPPLY.sub(_totalAllocated);
+      AVAILABLE_PRESALE_SUPPLY = AVAILABLE_PRESALE_SUPPLY.sub(_totalAllocated);
       allocations[_recipient] = Allocation(uint8(AllocationType.PRESALE), 0, 0, _totalAllocated, 0);
     } else if (_supply == 1) {
-      fromSupply = 'founder';
-      AVAILABLE_FOUNDER_SUPPLY.sub(_totalAllocated);
-      allocations[_recipient] = Allocation(uint8(AllocationType.FOUNDER), 1 years, 4 years, _totalAllocated, 0);
+      AVAILABLE_FOUNDER_SUPPLY = AVAILABLE_FOUNDER_SUPPLY.sub(_totalAllocated);
+      allocations[_recipient] = Allocation(uint8(AllocationType.FOUNDER), startTime + 1 years, startTime + 4 years, _totalAllocated, 0);
     } else if (_supply == 2) {
-      fromSupply = 'airdrop';
-      AVAILABLE_AIRDROP_SUPPLY.sub(_totalAllocated);
-      allocations[_recipient] = Allocation(uint8(AllocationType.AIRDROP), 0, 1 years, _totalAllocated, 0);
+      AVAILABLE_AIRDROP_SUPPLY = AVAILABLE_AIRDROP_SUPPLY.sub(_totalAllocated);
+      allocations[_recipient] = Allocation(uint8(AllocationType.AIRDROP), 0, 0, _totalAllocated, 0);
     } else if (_supply == 3) {
-      fromSupply = 'bdmarket';
-      AVAILABLE_BDMARKET_SUPPLY.sub(_totalAllocated);
-      allocations[_recipient] = Allocation(uint8(AllocationType.BDMARKET), 0, 0, _totalAllocated, 0);
+      AVAILABLE_ADVISOR_SUPPLY = AVAILABLE_ADVISOR_SUPPLY.sub(_totalAllocated);
+      allocations[_recipient] = Allocation(uint8(AllocationType.ADVISOR), startTime + 212 days, 0, _totalAllocated, 0);
     } else if (_supply == 4) {
-      fromSupply = 'advisor';
-      AVAILABLE_ADVISOR_SUPPLY.sub(_totalAllocated);
-      allocations[_recipient] = Allocation(uint8(AllocationType.ADVISOR), 215 days, 0, _totalAllocated, 0);
+      AVAILABLE_BONUS_SUPPLY = AVAILABLE_BONUS_SUPPLY.sub(_totalAllocated);
+      allocations[_recipient] = Allocation(uint8(AllocationType.BONUS), startTime + 1 years, startTime + 4 years, _totalAllocated, 0);
     } else if (_supply == 5) {
-      fromSupply = 'reserve';
-      AVAILABLE_RESERVE_SUPPLY.sub(_totalAllocated);
-      allocations[_recipient] = Allocation(uint8(AllocationType.RESERVE), 100 days, 4 years, _totalAllocated, 0);
+      AVAILABLE_RESERVE_SUPPLY = AVAILABLE_RESERVE_SUPPLY.sub(_totalAllocated);
+      allocations[_recipient] = Allocation(uint8(AllocationType.RESERVE), startTime + 182 days, startTime + 4 years, _totalAllocated, 0);
     }
-    grandTotalAllocated.add(_totalAllocated);
-    LogNewAllocation(_recipient, fromSupply, _totalAllocated, grandTotalAllocated);
+    AVAILABLE_TOTAL_SUPPLY = AVAILABLE_TOTAL_SUPPLY.sub(_totalAllocated);
+    grandTotalAllocated = grandTotalAllocated.add(_totalAllocated);
+    LogNewAllocation(_recipient, _supply, _totalAllocated, grandTotalAllocated);
   }
 
   /**
     * @dev Transfer a recipients available allocation to their address
+    * @param _recipient The address to withdraw tokens for
     */
   function transferTokens (address _recipient) public {
     require(allocations[_recipient].amountClaimed < allocations[_recipient].totalAllocated);
-    require(block.timestamp >= startTime + allocations[_recipient].cliffDuration);
-    // Determine the available amount that can be claimed
+    require(now >= allocations[_recipient].endCliff);
+    uint256 newAmountClaimed;
     if (allocations[_recipient].endVesting > now) {
-      uint256 availableAtTime = allocations[_recipient].totalAllocated.mul(now).div(allocations[_recipient].endVesting);
-      uint256 availablePolyToClaim = availableAtTime.sub(allocations[_recipient].amountClaimed);
-      grandTotalClaimed.add(availablePolyToClaim);
-      allocations[_recipient].amountClaimed = availableAtTime;
-      POLY.transfer(_recipient, availablePolyToClaim);
+      // Transfer available amount based on vesting schedule and allocation
+      newAmountClaimed = allocations[_recipient].totalAllocated.mul(now.sub(startTime)).div(allocations[_recipient].endVesting.sub(startTime));
     } else {
-      allocations[_recipient].amountClaimed = allocations[_recipient].totalAllocated;
-      grandTotalClaimed.add(allocations[_recipient].totalAllocated);
-      POLY.transfer(_recipient, allocations[_recipient].totalAllocated);
+      // Transfer total allocated (minus previously claimed tokens)
+      newAmountClaimed = allocations[_recipient].totalAllocated;
     }
-    LogPolyClaimed(_recipient, allocations[_recipient].AllocationSupply, allocations[_recipient].amountClaimed, allocations[_recipient].totalAllocated, grandTotalClaimed);
-  }
-
-  // Prevent accidental ether payments to the contract
-  function () public {
-    revert();
+    uint256 tokensToTransfer = newAmountClaimed.sub(allocations[_recipient].amountClaimed);
+    allocations[_recipient].amountClaimed = newAmountClaimed;
+    POLY.transfer(_recipient, tokensToTransfer);
+    grandTotalClaimed = grandTotalClaimed.add(tokensToTransfer);
+    LogPolyClaimed(_recipient, allocations[_recipient].AllocationSupply, tokensToTransfer, newAmountClaimed, grandTotalClaimed);
   }
 
   // Allow transfer of accidentally sent ERC20 tokens

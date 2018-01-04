@@ -108,11 +108,6 @@ contract PolyDistribution is Ownable {
     LogPolyClaimed(_recipient, allocations[_recipient].AllocationSupply, tokensToTransfer, newAmountClaimed, grandTotalClaimed);
   }
 
-  // Prevent accidental ether payments to the contract
-  function () public payable {
-    revert();
-  }
-
   // Allow transfer of accidentally sent ERC20 tokens
   function refundTokens(address _recipient, address _token) public onlyOwner {
     require(_token != address(this));

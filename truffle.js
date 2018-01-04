@@ -21,7 +21,6 @@ module.exports = {
       port: 1337,
       network_id: '3',
       from: '0xb571be0e1876dc43345cfb08e1ad2792f678aefd',
-      gasPrice: 0x09,
       gas: 4.512e6,
     },
     coverage: {
