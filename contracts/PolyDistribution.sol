@@ -43,6 +43,7 @@ contract PolyDistribution is Ownable {
 
   /**
     * @dev Constructor function - Set the poly token address
+    * @param _startTime The time when PolyDistribution goes live
     */
     function PolyDistribution(uint256 _startTime) public {
       require(_startTime >= now);
