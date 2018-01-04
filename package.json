@@ -1,5 +1,5 @@
 {
-  "name": "token-distribution",
+  "name": "polymath-token-distribution",
   "version": "0.0.1",
   "description": "Ethereum smart contracts for the POLY token distribution",
   "main": "index.js",
@@ -15,14 +15,17 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/PolymathNetwork/token-distribution.git"
+    "url":
+      "git+ssh://git@github.com/PolymathNetwork/polymath-token-distribution.git"
   },
-  "author": "Sukhveer Sanghera",
+  "author": "Polymath Inc.",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/PolymathNetwork/token-distribution/issues"
+    "url":
+      "https://github.com/PolymathNetwork/polymath-token-distribution/issues"
   },
-  "homepage": "https://github.com/PolymathNetwork/token-distribution#readme",
+  "homepage":
+    "https://github.com/PolymathNetwork/polymath-token-distribution#readme",
   "dependencies": {
     "babel-polyfill": "6.26.0",
     "babel-preset-es2015": "6.24.1",
