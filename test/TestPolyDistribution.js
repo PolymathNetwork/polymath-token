@@ -509,20 +509,38 @@ contract('PolyDistribution', function(accounts) {
             await mineBlock() // workaround for https://github.com/ethereumjs/testrpc/issues/336
         });
 
-        it("should withdraw AIRDROP tokens", async function () {
-          let currentBlock = await web3.eth.getBlock("latest");
+        it("should fail to withdraw AIRDROP 1 tokens as they have already been fully distributed", async function () {
 
-          // Check token balance for account before calling transferTokens, then check afterwards.
-          let tokenBalance = await polyToken.balanceOf(account_airdrop1,{from:accounts[0]});
-          await polyDistribution.transferTokens(account_airdrop1,{from:accounts[0]});
-          let new_tokenBalance = await polyToken.balanceOf(account_airdrop1,{from:accounts[0]});
+          try {
+            await polyDistribution.transferTokens(account_airdrop1,{from:accounts[0]});
+          } catch (error) {
+              let currentBlock = await web3.eth.getBlock("latest");
 
-          //PRESALE tokens are completely distributed once allocated as they have no vesting period nor cliff
-          let allocation = await polyDistribution.allocations(account_airdrop1,{from:account_owner});
+              let new_tokenBalance = await polyToken.balanceOf(account_airdrop1,{from:accounts[0]});
+              let allocation = await polyDistribution.allocations(account_airdrop1,{from:account_owner});
+              logWithdrawalData("AIRDROP",currentBlock.timestamp,account_airdrop1,contractStartTime,allocation,new_tokenBalance);
 
-          logWithdrawalData("AIRDROP",currentBlock.timestamp,account_airdrop1,contractStartTime,allocation,new_tokenBalance);
+              logError("✅   Failed to withdraw");
+              return true;
+          }
+          throw new Error("I should never see this!")
 
         });
+
+        // it("should withdraw AIRDROP tokens", async function () {
+        //   let currentBlock = await web3.eth.getBlock("latest");
+        //
+        //   // Check token balance for account before calling transferTokens, then check afterwards.
+        //   let tokenBalance = await polyToken.balanceOf(account_airdrop1,{from:accounts[0]});
+        //   await polyDistribution.transferTokens(account_airdrop1,{from:accounts[0]});
+        //   let new_tokenBalance = await polyToken.balanceOf(account_airdrop1,{from:accounts[0]});
+        //
+        //   //PRESALE tokens are completely distributed once allocated as they have no vesting period nor cliff
+        //   let allocation = await polyDistribution.allocations(account_airdrop1,{from:account_owner});
+        //
+        //   logWithdrawalData("AIRDROP",currentBlock.timestamp,account_airdrop1,contractStartTime,allocation,new_tokenBalance);
+        //
+        // });
 
         it("should withdraw AIRDROP tokens", async function () {
           let currentBlock = await web3.eth.getBlock("latest");
