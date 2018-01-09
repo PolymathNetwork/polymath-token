@@ -110,7 +110,7 @@ contract PolyDistribution is Ownable {
 
   // Allow transfer of accidentally sent ERC20 tokens
   function refundTokens(address _recipient, address _token) public onlyOwner {
-    require(_token != address(this));
+    require(_token != address(POLY));
     IERC20 token = IERC20(_token);
     uint256 balance = token.balanceOf(this);
     token.transfer(_recipient, balance);
