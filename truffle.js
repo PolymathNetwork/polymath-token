@@ -1,6 +1,9 @@
 require('babel-register');
 require('babel-polyfill');
 
+var HDWalletProvider = require("truffle-hdwallet-provider");
+var mnemonic = ""; //BE CAREFUL!
+
 module.exports = {
   networks: {
     development: {
@@ -9,6 +12,11 @@ module.exports = {
       network_id: '*', // Match any network id
       gas: 4500000,
     },
+    ropsten: {
+      provider: new HDWalletProvider(mnemonic, "https://ropsten.infura.io/APIKEY"),
+      network_id: '3',
+      gas:2500000
+    },
     local: {
       host: 'localhost',
       port: 8545,
@@ -16,13 +24,13 @@ module.exports = {
       gasPrice: 0x01,
       network_id: '*',
     },
-    ropsten: {
-      host: 'localhost',
-      port: 1337,
-      network_id: '3',
-      from: '0xb571be0e1876dc43345cfb08e1ad2792f678aefd',
-      gasPrice: 0x10000,
-      gas: 4.512e6,
+    rinkeby: {
+      network_id: 4,
+      host: "localhost",
+      port:  8545,
+      account: 0x3fcf622ce12e21d738517dbe09dfeaa4f4552816,
+      gas:2000000
+      //gasPrice: 100000000000
     },
     coverage: {
       host: 'localhost',
@@ -32,6 +40,10 @@ module.exports = {
       gasPrice: 0x01,
     },
   },
+   rpc: {
+ host: 'localhost',
+ post:8080
+   },
   mocha: {
     useColors: true,
     slow: 30000,
