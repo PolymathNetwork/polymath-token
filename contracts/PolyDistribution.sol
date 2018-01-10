@@ -17,6 +17,7 @@ contract PolyDistribution is Ownable {
 
   uint256 private constant decimalFactor = 10**uint256(18);
   enum AllocationType { PRESALE, FOUNDER, AIRDROP, ADVISOR, BONUS, RESERVE }
+  uint256 public constant INITIAL_SUPPLY   = 1000000000 * decimalFactor;
   uint256 public AVAILABLE_TOTAL_SUPPLY    = 1000000000 * decimalFactor;
   uint256 public AVAILABLE_PRESALE_SUPPLY  = 240000000 * decimalFactor; // 100% Released at Token Distribution (TD)
   uint256 public AVAILABLE_FOUNDER_SUPPLY  = 150000000 * decimalFactor; // 25% Released at TD +1 year -> 100% at TD +4 years
@@ -24,7 +25,6 @@ contract PolyDistribution is Ownable {
   uint256 public AVAILABLE_ADVISOR_SUPPLY  = 25000000 * decimalFactor;  // 100% Released at TD +7 months
   uint256 public AVAILABLE_BONUS_SUPPLY    = 80000000 * decimalFactor;  // 25% Released at TD +1 year -> 100% at TD +4 years
   uint256 public AVAILABLE_RESERVE_SUPPLY  = 495000000 * decimalFactor; // 12.5% Released at TD +6 months -> 100% at TD +4 years
-  uint256 public grandTotalAllocated = 0;
   uint256 public grandTotalClaimed = 0;
   uint256 public startTime;
 
@@ -82,8 +82,7 @@ contract PolyDistribution is Ownable {
       allocations[_recipient] = Allocation(uint8(AllocationType.RESERVE), startTime + 182 days, startTime + 4 years, _totalAllocated, 0);
     }
     AVAILABLE_TOTAL_SUPPLY = AVAILABLE_TOTAL_SUPPLY.sub(_totalAllocated);
-    grandTotalAllocated = grandTotalAllocated.add(_totalAllocated);
-    LogNewAllocation(_recipient, _supply, _totalAllocated, grandTotalAllocated);
+    LogNewAllocation(_recipient, _supply, _totalAllocated, grandTotalAllocated());
   }
 
   /**
@@ -107,6 +106,11 @@ contract PolyDistribution is Ownable {
     POLY.transfer(_recipient, tokensToTransfer);
     grandTotalClaimed = grandTotalClaimed.add(tokensToTransfer);
     LogPolyClaimed(_recipient, allocations[_recipient].AllocationSupply, tokensToTransfer, newAmountClaimed, grandTotalClaimed);
+  }
+
+  // Returns the amount of POLY allocated
+  function grandTotalAllocated() public view returns (uint256) {
+    return INITIAL_SUPPLY - AVAILABLE_TOTAL_SUPPLY;
   }
 
   // Allow transfer of accidentally sent ERC20 tokens
