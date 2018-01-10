@@ -17,6 +17,7 @@ contract PolyDistribution is Ownable {
 
   uint256 private constant decimalFactor = 10**uint256(18);
   enum AllocationType { PRESALE, FOUNDER, AIRDROP, ADVISOR, BONUS, RESERVE }
+  uint256 public constant INITIAL_SUPPLY   = 1000000000 * decimalFactor;
   uint256 public AVAILABLE_TOTAL_SUPPLY    = 1000000000 * decimalFactor;
   uint256 public AVAILABLE_PRESALE_SUPPLY  = 240000000 * decimalFactor; // 100% Released at Token Distribution (TD)
   uint256 public AVAILABLE_FOUNDER_SUPPLY  = 150000000 * decimalFactor; // 25% Released at TD +1 year -> 100% at TD +4 years
@@ -24,7 +25,6 @@ contract PolyDistribution is Ownable {
   uint256 public AVAILABLE_ADVISOR_SUPPLY  = 25000000 * decimalFactor;  // 100% Released at TD +7 months
   uint256 public AVAILABLE_BONUS_SUPPLY    = 80000000 * decimalFactor;  // 25% Released at TD +1 year -> 100% at TD +4 years
   uint256 public AVAILABLE_RESERVE_SUPPLY  = 495000000 * decimalFactor; // 12.5% Released at TD +6 months -> 100% at TD +4 years
-  uint256 public grandTotalAllocated = 0;
   uint256 public grandTotalClaimed = 0;
   uint256 public startTime;
 
@@ -38,7 +38,7 @@ contract PolyDistribution is Ownable {
   }
   mapping (address => Allocation) public allocations;
 
-  event LogNewAllocation(address indexed _recipient, uint8 indexed _fromSupply, uint256 _totalAllocated, uint256 _grandTotalAllocated);
+  event LogNewAllocation(address indexed _recipient, AllocationType indexed _fromSupply, uint256 _totalAllocated, uint256 _grandTotalAllocated);
   event LogPolyClaimed(address indexed _recipient, uint8 indexed _fromSupply, uint256 _amountClaimed, uint256 _totalAllocated, uint256 _grandTotalClaimed);
 
   /**
@@ -58,32 +58,31 @@ contract PolyDistribution is Ownable {
     * @param _totalAllocated The total amount of POLY available to the receipient (after vesting)
     * @param _supply The POLY supply the allocation will be taken from
     */
-  function setAllocation (address _recipient, uint256 _totalAllocated, uint8 _supply) onlyOwner public {
+  function setAllocation (address _recipient, uint256 _totalAllocated, AllocationType _supply) onlyOwner public {
     require(allocations[_recipient].totalAllocated == 0 && _totalAllocated > 0);
-    require(_supply >= 0 && _supply <= 5);
+    require(_supply >= AllocationType.PRESALE && _supply <= AllocationType.RESERVE);
     require(_recipient != address(0));
-    if (_supply == 0) {
+    if (_supply == AllocationType.PRESALE) {
       AVAILABLE_PRESALE_SUPPLY = AVAILABLE_PRESALE_SUPPLY.sub(_totalAllocated);
       allocations[_recipient] = Allocation(uint8(AllocationType.PRESALE), 0, 0, _totalAllocated, 0);
-    } else if (_supply == 1) {
+    } else if (_supply == AllocationType.FOUNDER) {
       AVAILABLE_FOUNDER_SUPPLY = AVAILABLE_FOUNDER_SUPPLY.sub(_totalAllocated);
       allocations[_recipient] = Allocation(uint8(AllocationType.FOUNDER), startTime + 1 years, startTime + 4 years, _totalAllocated, 0);
-    } else if (_supply == 2) {
+    } else if (_supply == AllocationType.AIRDROP) {
       AVAILABLE_AIRDROP_SUPPLY = AVAILABLE_AIRDROP_SUPPLY.sub(_totalAllocated);
       allocations[_recipient] = Allocation(uint8(AllocationType.AIRDROP), 0, 0, _totalAllocated, 0);
-    } else if (_supply == 3) {
+    } else if (_supply == AllocationType.ADVISOR) {
       AVAILABLE_ADVISOR_SUPPLY = AVAILABLE_ADVISOR_SUPPLY.sub(_totalAllocated);
       allocations[_recipient] = Allocation(uint8(AllocationType.ADVISOR), startTime + 212 days, 0, _totalAllocated, 0);
-    } else if (_supply == 4) {
+    } else if (_supply == AllocationType.BONUS) {
       AVAILABLE_BONUS_SUPPLY = AVAILABLE_BONUS_SUPPLY.sub(_totalAllocated);
       allocations[_recipient] = Allocation(uint8(AllocationType.BONUS), startTime + 1 years, startTime + 4 years, _totalAllocated, 0);
-    } else if (_supply == 5) {
+    } else if (_supply == AllocationType.RESERVE) {
       AVAILABLE_RESERVE_SUPPLY = AVAILABLE_RESERVE_SUPPLY.sub(_totalAllocated);
       allocations[_recipient] = Allocation(uint8(AllocationType.RESERVE), startTime + 182 days, startTime + 4 years, _totalAllocated, 0);
     }
     AVAILABLE_TOTAL_SUPPLY = AVAILABLE_TOTAL_SUPPLY.sub(_totalAllocated);
-    grandTotalAllocated = grandTotalAllocated.add(_totalAllocated);
-    LogNewAllocation(_recipient, _supply, _totalAllocated, grandTotalAllocated);
+    LogNewAllocation(_recipient, _supply, _totalAllocated, grandTotalAllocated());
   }
 
   /**
@@ -107,6 +106,11 @@ contract PolyDistribution is Ownable {
     POLY.transfer(_recipient, tokensToTransfer);
     grandTotalClaimed = grandTotalClaimed.add(tokensToTransfer);
     LogPolyClaimed(_recipient, allocations[_recipient].AllocationSupply, tokensToTransfer, newAmountClaimed, grandTotalClaimed);
+  }
+
+  // Returns the amount of POLY allocated
+  function grandTotalAllocated() public view returns (uint256) {
+    return INITIAL_SUPPLY - AVAILABLE_TOTAL_SUPPLY;
   }
 
   // Allow transfer of accidentally sent ERC20 tokens
