@@ -1,6 +1,6 @@
 # Polymath (POLY) Token Distribution
 
-<img src="https://travis-ci.org/PolymathNetwork/polymath-token-distribution.svg?branch=master"/> <a href="t.me/polymathnetwork"><img src="https://img.shields.io/badge/40k+-telegram-blue.svg"></a>
+<img src="https://travis-ci.org/PolymathNetwork/polymath-token-distribution.svg?branch=master"/> <a href="https://t.me/polymathnetwork"><img src="https://img.shields.io/badge/40k+-telegram-blue.svg"></a>
 
 The Ethereum contracts for the [Polymath](https://polymath.network) (POLY) token
 distribution. The primary purpose is to allocate tokens to purchasers, advisors,
