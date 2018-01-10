@@ -15,15 +15,15 @@ contract PolyDistribution is Ownable {
 
   PolyToken public POLY;
 
-  uint256 private constant decimals = 10**uint256(18);
+  uint256 private constant decimalFactor = 10**uint256(18);
   enum AllocationType { PRESALE, FOUNDER, AIRDROP, ADVISOR, BONUS, RESERVE }
-  uint256 public AVAILABLE_TOTAL_SUPPLY    = 1000000000 * decimals;
-  uint256 public AVAILABLE_PRESALE_SUPPLY  = 240000000 * decimals; // 100% Released at Token Distribution (TD)
-  uint256 public AVAILABLE_FOUNDER_SUPPLY  = 150000000 * decimals; // 25% Released at TD +1 year -> 100% at TD +4 years
-  uint256 public AVAILABLE_AIRDROP_SUPPLY  = 10000000 * decimals;  // 100% Released at TD
-  uint256 public AVAILABLE_ADVISOR_SUPPLY  = 25000000 * decimals;  // 100% Released at TD +7 months
-  uint256 public AVAILABLE_BONUS_SUPPLY    = 80000000 * decimals;  // 25% Released at TD +1 year -> 100% at TD +4 years
-  uint256 public AVAILABLE_RESERVE_SUPPLY  = 495000000 * decimals; // 12.5% Released at TD +6 months -> 100% at TD +4 years
+  uint256 public AVAILABLE_TOTAL_SUPPLY    = 1000000000 * decimalFactor;
+  uint256 public AVAILABLE_PRESALE_SUPPLY  = 240000000 * decimalFactor; // 100% Released at Token Distribution (TD)
+  uint256 public AVAILABLE_FOUNDER_SUPPLY  = 150000000 * decimalFactor; // 25% Released at TD +1 year -> 100% at TD +4 years
+  uint256 public AVAILABLE_AIRDROP_SUPPLY  = 10000000 * decimalFactor;  // 100% Released at TD
+  uint256 public AVAILABLE_ADVISOR_SUPPLY  = 25000000 * decimalFactor;  // 100% Released at TD +7 months
+  uint256 public AVAILABLE_BONUS_SUPPLY    = 80000000 * decimalFactor;  // 25% Released at TD +1 year -> 100% at TD +4 years
+  uint256 public AVAILABLE_RESERVE_SUPPLY  = 495000000 * decimalFactor; // 12.5% Released at TD +6 months -> 100% at TD +4 years
   uint256 public grandTotalAllocated = 0;
   uint256 public grandTotalClaimed = 0;
   uint256 public startTime;
@@ -38,8 +38,8 @@ contract PolyDistribution is Ownable {
   }
   mapping (address => Allocation) public allocations;
 
-  event LogNewAllocation(address _recipient, uint8 _fromSupply, uint256 _totalAllocated, uint256 _grandTotalAllocated);
-  event LogPolyClaimed(address _recipient, uint8 _fromSupply, uint256 _amountClaimed, uint256 _totalAllocated, uint256 _grandTotalClaimed);
+  event LogNewAllocation(address indexed _recipient, uint8 indexed _fromSupply, uint256 _totalAllocated, uint256 _grandTotalAllocated);
+  event LogPolyClaimed(address indexed _recipient, uint8 indexed _fromSupply, uint256 _amountClaimed, uint256 _totalAllocated, uint256 _grandTotalClaimed);
 
   /**
     * @dev Constructor function - Set the poly token address
@@ -93,6 +93,7 @@ contract PolyDistribution is Ownable {
   function transferTokens (address _recipient) public {
     require(allocations[_recipient].amountClaimed < allocations[_recipient].totalAllocated);
     require(now >= allocations[_recipient].endCliff);
+    require(now >= startTime);
     uint256 newAmountClaimed;
     if (allocations[_recipient].endVesting > now) {
       // Transfer available amount based on vesting schedule and allocation
