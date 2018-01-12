@@ -19,8 +19,6 @@ if (typeof web3 !== 'undefined') {
 
 var address = ''; // Account performing the allocation
 var key = ''; // BE CAREFUL!!! private key of the account performing the allocation
-var keyWith0x = '';// BE CAREFUL!!! private key (with a prefixed 0x) of the account performing the allocation
-
 
 PolyDistribution.setProvider(web3.currentProvider);
 //dirty hack for web3@1.0.0 support for localhost testrpc, see https://github.com/trufflesuite/truffle-contract/issues/56#issuecomment-331084530
@@ -32,7 +30,7 @@ if (typeof PolyDistribution.currentProvider.sendAsync !== "function") {
   };
 }
 
-var interface = [
+var ABI = [
   {
     "constant": false,
     "inputs": [
@@ -393,19 +391,17 @@ var interface = [
   }
 ];
 
-async function doAllocationRaw(beneficiary, tokens) {
+async function doAllocationRaw(beneficiary, tokens, transactionCount) {
 
   var privateKey = new Buffer(key, 'hex')
 
-  let poly =  new web3.eth.Contract(interface, polyDistributionAddress);
+  let poly =  new web3.eth.Contract(ABI, polyDistributionAddress);
 
   var funcData = poly.methods.setAllocation(beneficiary,tokens,2).encodeABI();
-  let transactionCount = await web3.eth.getTransactionCount(address);
-  //console.log(transactionCount);
   var rawTx = {
     nonce: web3.utils.toHex(transactionCount),
     gasLimit: web3.utils.toHex(200000),
-    gasPrice: web3.utils.toHex(20000000000),
+    gasPrice: web3.utils.toHex(40000000000),
     to: polyDistributionAddress,
     value: '0x00',
     data: funcData
@@ -416,7 +412,8 @@ async function doAllocationRaw(beneficiary, tokens) {
 
   var serializedTx = tx.serialize();
   console.log("Attempting to allocate",tokens, "to account",beneficiary);
-  await web3.eth.sendSignedTransaction('0x' + serializedTx.toString('hex'));
+  let receipt = await web3.eth.sendSignedTransaction('0x' + serializedTx.toString('hex'));
+  //console.log(receipt);
 }
 
 let polyDistributionAddress = process.argv.slice(2)[0];
@@ -462,23 +459,25 @@ async function setAllocationWithPrivateKey() {
     --------------------------------------------
   `);
 
-  let acc = await web3.eth.accounts.privateKeyToAccount(keyWith0x);
+  let acc = await web3.eth.accounts.privateKeyToAccount("0x"+key);
   let account = acc.address;
 
   let userBalance = await web3.eth.getBalance(account);
   //console.log(userBalance);
 
   let polyDistribution = await PolyDistribution.at(polyDistributionAddress);
+  let nonce = await web3.eth.getTransactionCount(address);
   //console.log(polyDistribution);
   for(var i = 0;i< distribData.length;i++){
 
     let prevAllocation = await polyDistribution.allocations(distribData[i][1],{from:account});
     if(prevAllocation[3].toNumber() ==0){
       try{
-        await doAllocationRaw(distribData[i][1],distribData[i][0]);
+        doAllocationRaw(distribData[i][1],distribData[i][0],nonce);
         let allocation = await polyDistribution.allocations(distribData[i][1],{from:account});
 
-        console.log("Allocated", allocation[3].toString(10), "tokens for account:",distribData[i][1]);
+        //console.log("Allocated", allocation[3].toString(10), "tokens for account:",distribData[i][1]);
+        nonce++;
       } catch (err){
         console.log(err);
       }
@@ -486,41 +485,6 @@ async function setAllocationWithPrivateKey() {
       console.log('\x1b[31m%s\x1b[0m',"SKIPPED token allocation for account:",distribData[i][1],". Account already has", prevAllocation[3].toString(10));
     }
   }
-
-}
-
-async function setAllocationParallel() {
-
-  console.log(`
-    --------------------------------------------
-    ---------Performing allocations (UNTESTED) ------------
-    --------------------------------------------
-  `);
-
-  let accounts = await web3.eth.getAccounts();
-  let userBalance = await web3.eth.getBalance(accounts[0]);
-
-  let polyDistribution = await PolyDistribution.at(polyDistributionAddress);
-  let promises = new Array();
-  //console.log(polyDistribution);
-  for(var i = 0;i< distribData.length;i++){
-
-    let prevAllocation = await polyDistribution.allocations(distribData[i][1],{from:accounts[0]});
-    if(prevAllocation[3].toNumber() ==0){
-      try{
-        promises[i] = polyDistribution.setAllocation(distribData[i][1],distribData[i][0],2,{from:accounts[0], gas:300000});
-        let allocation = await polyDistribution.allocations(distribData[i][1],{from:accounts[0]});
-
-        console.log("Allocated", allocation[3].toString(10), "tokens for account:",distribData[i][1]);
-      } catch (err){
-        console.log(err);
-      }
-    }else{
-      console.log('\x1b[31m%s\x1b[0m',"SKIPPED token allocation for account:",distribData[i][1],". Account already has", prevAllocation[3].toString(10));
-    }
-  }
-  console.log("RUN!!!!");
-  await Promise.all(promises);
 
 }
 
@@ -539,7 +503,7 @@ function readFile() {
 
   var csvStream = csv()
       .on("data", function(data){
-          if(data[0] != null && (data[1]!=null && data[1]!='' )){
+          if((data[0] != null && data[0] != '' && data[0] != '0') && (data[1]!=null && data[1]!='' )){
             data[0] = parseInt(data[0]);
             distribData[index] = data;
             index++;
