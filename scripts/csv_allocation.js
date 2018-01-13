@@ -14,7 +14,7 @@ if (typeof web3 !== 'undefined') {
 } else {
   // set the provider you want from Web3.providers
   //web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"));
-  web3 = new Web3(new Web3.providers.HttpProvider('https://ropsten.infura.io/APIKEY'));
+  web3 = new Web3(new Web3.providers.HttpProvider('https://ropsten.infura.io/'));
 }
 
 var address = ''; // Account performing the allocation
@@ -519,7 +519,21 @@ function readFile() {
   stream.pipe(csvStream);
 }
 
+// async function getPastEvents(){
+//
+//   let polyDistribution = new web3.eth.Contract(ABI, polyDistributionAddress);
+//
+//   polyDistribution.getPastEvents('LogNewAllocation', {
+//     fromBlock: 0,
+//     toBlock: 'latest'
+//   }, function(error, events){ console.log(events); })
+//   .then(function(events){
+//       console.log(events) // same results as the optional callback above
+//   });
+//
+// }
 
+//getPastEvents();
 
 if(polyDistributionAddress){
   readFile();
