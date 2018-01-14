@@ -61,7 +61,7 @@ contract('PolyDistribution', function(accounts) {
   let account_founder2  = accounts[3];
   let account_airdrop1  = accounts[4];
   let account_airdrop2  = accounts[5];
-  let account_bonus     = accounts[6];
+  let account_bonus1    = accounts[6];
   let account_advisor1  = accounts[7];
   let account_advisor2  = accounts[8];
   let account_reserve   = accounts[9];
@@ -130,13 +130,21 @@ contract('PolyDistribution', function(accounts) {
             oldPresaleSupply = await polyDistribution.AVAILABLE_ADVISOR_SUPPLY({from:account_owner});
             allocationTypeNum = 3;
           break;
-        case "BONUS":
-            oldPresaleSupply = await polyDistribution.AVAILABLE_BONUS_SUPPLY({from:account_owner});
-            allocationTypeNum = 4;
-          break;
         case "RESERVE":
             oldPresaleSupply = await polyDistribution.AVAILABLE_RESERVE_SUPPLY({from:account_owner});
+            allocationTypeNum = 4;
+          break;
+        case "BONUS1":
+            oldPresaleSupply = await polyDistribution.AVAILABLE_BONUS1_SUPPLY({from:account_owner});
             allocationTypeNum = 5;
+          break;
+        case "BONUS2":
+            oldPresaleSupply = await polyDistribution.AVAILABLE_BONUS2_SUPPLY({from:account_owner});
+            allocationTypeNum = 6;
+          break;
+        case "BONUS3":
+            oldPresaleSupply = await polyDistribution.AVAILABLE_BONUS3_SUPPLY({from:account_owner});
+            allocationTypeNum = 7;
           break;
         default:
 
@@ -144,7 +152,6 @@ contract('PolyDistribution', function(accounts) {
 
       await polyDistribution.setAllocation(accountToUse,tokenAllocation,allocationTypeNum,{from:account_owner});
       let allocation = await polyDistribution.allocations(accountToUse,{from:account_owner});
-
       setAllocationStruct(allocation);
 
       // Allocation must be equal to the passed tokenAllocation
@@ -168,11 +175,17 @@ contract('PolyDistribution', function(accounts) {
         case "ADVISOR":
           newPresaleSupply = await polyDistribution.AVAILABLE_ADVISOR_SUPPLY({from:account_owner});
           break;
-        case "BONUS":
-          newPresaleSupply = await polyDistribution.AVAILABLE_BONUS_SUPPLY({from:account_owner});
-          break
         case "RESERVE":
           newPresaleSupply = await polyDistribution.AVAILABLE_RESERVE_SUPPLY({from:account_owner});
+          break;
+        case "BONUS1":
+          newPresaleSupply = await polyDistribution.AVAILABLE_BONUS1_SUPPLY({from:account_owner});
+          break;
+        case "BONUS2":
+          newPresaleSupply = await polyDistribution.AVAILABLE_BONUS2_SUPPLY({from:account_owner});
+          break;
+        case "BONUS3":
+          newPresaleSupply = await polyDistribution.AVAILABLE_BONUS3_SUPPLY({from:account_owner});
           break;
         default:
 
@@ -300,10 +313,10 @@ contract('PolyDistribution', function(accounts) {
 
       });
 
-      describe("BONUS Allocation", async function () {
+      describe("RESERVE Allocation", async function () {
 
-        let tokensToAllocate = 5000;
-        doAllocationTests("BONUS",tokensToAllocate,account_bonus);
+        let tokensToAllocate = 1000;
+        doAllocationTests("RESERVE",tokensToAllocate,account_reserve);
 
         after(async() => {
           oldTotalSupply = new BigNumber(oldTotalSupply.minus(tokensToAllocate));
@@ -312,10 +325,10 @@ contract('PolyDistribution', function(accounts) {
 
       });
 
-      describe("RESERVE Allocation", async function () {
+      describe("BONUS 1 Allocation", async function () {
 
-        let tokensToAllocate = 1000;
-        doAllocationTests("RESERVE",tokensToAllocate,account_reserve);
+        let tokensToAllocate = 5000;
+        doAllocationTests("BONUS1",tokensToAllocate,account_bonus1);
 
         after(async() => {
           oldTotalSupply = new BigNumber(oldTotalSupply.minus(tokensToAllocate));
@@ -554,6 +567,23 @@ contract('PolyDistribution', function(accounts) {
           let allocation = await polyDistribution.allocations(account_airdrop2,{from:account_owner});
 
           logWithdrawalData("AIRDROP",currentBlock.timestamp,account_airdrop2,contractStartTime,allocation,new_tokenBalance);
+
+          let expectedTokenBalance = calculateExpectedTokens(allocation,currentBlock.timestamp,contractStartTime);
+          assert.equal(expectedTokenBalance.toString(10),new_tokenBalance.toString(10));
+        });
+
+        it("should withdraw BONUS 1 tokens", async function () {
+          let currentBlock = await web3.eth.getBlock("latest");
+
+          // Check token balance for account before calling transferTokens, then check afterwards.
+          let tokenBalance = await polyToken.balanceOf(account_bonus1,{from:accounts[0]});
+          await polyDistribution.transferTokens(account_bonus1,{from:accounts[0]});
+          let new_tokenBalance = await polyToken.balanceOf(account_bonus1,{from:accounts[0]});
+
+          //PRESALE tokens are completely distributed once allocated as they have no vesting period nor cliff
+          let allocation = await polyDistribution.allocations(account_bonus1,{from:account_owner});
+
+          logWithdrawalData("BONUS1",currentBlock.timestamp,account_bonus1,contractStartTime,allocation,new_tokenBalance);
 
           let expectedTokenBalance = calculateExpectedTokens(allocation,currentBlock.timestamp,contractStartTime);
           assert.equal(expectedTokenBalance.toString(10),new_tokenBalance.toString(10));
