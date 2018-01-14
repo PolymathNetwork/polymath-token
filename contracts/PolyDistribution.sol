@@ -83,13 +83,13 @@ contract PolyDistribution is Ownable {
       allocations[_recipient] = Allocation(uint8(AllocationType.RESERVE), startTime + 182 days, startTime + 4 years, _totalAllocated, 0);
     } else if (_supply == AllocationType.BONUS1) {
       AVAILABLE_BONUS1_SUPPLY = AVAILABLE_BONUS1_SUPPLY.sub(_totalAllocated);
-      allocations[_recipient] = Allocation(uint8(AllocationType.BONUS1), 0, startTime + 1 years, _totalAllocated, 0);
+      allocations[_recipient] = Allocation(uint8(AllocationType.BONUS1), startTime + 1 years, startTime + 1 years, _totalAllocated, 0);
     } else if (_supply == AllocationType.BONUS2) {
       AVAILABLE_BONUS2_SUPPLY = AVAILABLE_BONUS2_SUPPLY.sub(_totalAllocated);
-      allocations[_recipient] = Allocation(uint8(AllocationType.BONUS2), 0, startTime + 2 years, _totalAllocated, 0);
+      allocations[_recipient] = Allocation(uint8(AllocationType.BONUS2), startTime + 2 years, startTime + 2 years, _totalAllocated, 0);
     } else if (_supply == AllocationType.BONUS3) {
       AVAILABLE_BONUS3_SUPPLY = AVAILABLE_BONUS3_SUPPLY.sub(_totalAllocated);
-      allocations[_recipient] = Allocation(uint8(AllocationType.BONUS3), 0, startTime + 3 years, _totalAllocated, 0);
+      allocations[_recipient] = Allocation(uint8(AllocationType.BONUS3), startTime + 3 years, startTime + 3 years, _totalAllocated, 0);
     }
     AVAILABLE_TOTAL_SUPPLY = AVAILABLE_TOTAL_SUPPLY.sub(_totalAllocated);
     LogNewAllocation(_recipient, _supply, _totalAllocated, grandTotalAllocated());
