@@ -572,23 +572,6 @@ contract('PolyDistribution', function(accounts) {
           assert.equal(expectedTokenBalance.toString(10),new_tokenBalance.toString(10));
         });
 
-        it("should withdraw BONUS 1 tokens", async function () {
-          let currentBlock = await web3.eth.getBlock("latest");
-
-          // Check token balance for account before calling transferTokens, then check afterwards.
-          let tokenBalance = await polyToken.balanceOf(account_bonus1,{from:accounts[0]});
-          await polyDistribution.transferTokens(account_bonus1,{from:accounts[0]});
-          let new_tokenBalance = await polyToken.balanceOf(account_bonus1,{from:accounts[0]});
-
-          //PRESALE tokens are completely distributed once allocated as they have no vesting period nor cliff
-          let allocation = await polyDistribution.allocations(account_bonus1,{from:account_owner});
-
-          logWithdrawalData("BONUS1",currentBlock.timestamp,account_bonus1,contractStartTime,allocation,new_tokenBalance);
-
-          let expectedTokenBalance = calculateExpectedTokens(allocation,currentBlock.timestamp,contractStartTime);
-          assert.equal(expectedTokenBalance.toString(10),new_tokenBalance.toString(10));
-        });
-
       });
 
       describe("Withdraw 15 months after allocations", async function () {
@@ -611,6 +594,23 @@ contract('PolyDistribution', function(accounts) {
           let allocation = await polyDistribution.allocations(account_founder1,{from:account_owner});
 
           logWithdrawalData("FOUNDER",currentBlock.timestamp,account_founder1,contractStartTime,allocation,new_tokenBalance);
+
+          let expectedTokenBalance = calculateExpectedTokens(allocation,currentBlock.timestamp,contractStartTime);
+          assert.equal(expectedTokenBalance.toString(10),new_tokenBalance.toString(10));
+        });
+
+        it("should withdraw BONUS 1 tokens", async function () {
+          let currentBlock = await web3.eth.getBlock("latest");
+
+          // Check token balance for account before calling transferTokens, then check afterwards.
+          let tokenBalance = await polyToken.balanceOf(account_bonus1,{from:accounts[0]});
+          await polyDistribution.transferTokens(account_bonus1,{from:accounts[0]});
+          let new_tokenBalance = await polyToken.balanceOf(account_bonus1,{from:accounts[0]});
+
+          //PRESALE tokens are completely distributed once allocated as they have no vesting period nor cliff
+          let allocation = await polyDistribution.allocations(account_bonus1,{from:account_owner});
+
+          logWithdrawalData("BONUS1",currentBlock.timestamp,account_bonus1,contractStartTime,allocation,new_tokenBalance);
 
           let expectedTokenBalance = calculateExpectedTokens(allocation,currentBlock.timestamp,contractStartTime);
           assert.equal(expectedTokenBalance.toString(10),new_tokenBalance.toString(10));
