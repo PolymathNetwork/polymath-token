@@ -1,0 +1,13 @@
+750 250
+
+    --------------------------------------------
+    --------- Parsing distrib.csv file ---------
+    --------------------------------------------
+
+    ******** Removing beneficiaries without tokens or address data
+  
+[
+"undefined"],
+[
+"undefined"]
+Total to allocate from airdrop: 0

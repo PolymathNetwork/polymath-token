@@ -41,6 +41,15 @@ contract PolyDistribution is Ownable {
     uint256 amountClaimed;  // Total tokens claimed
   }
   mapping (address => Allocation) public allocations;
+  mapping (address => uint) public airdropAllocations;
+  mapping (address => bool) public airdropWithdrawn;
+
+  mapping (address => bool) public airdropAdmins;
+
+  modifier onlyOwnerOrAdmin() {
+    require(msg.sender == owner || airdropAdmins[msg.sender]);
+    _;
+  }
 
   event LogNewAllocation(address indexed _recipient, AllocationType indexed _fromSupply, uint256 _totalAllocated, uint256 _grandTotalAllocated);
   event LogPolyClaimed(address indexed _recipient, uint8 indexed _fromSupply, uint256 _amountClaimed, uint256 _totalAllocated, uint256 _grandTotalClaimed);
@@ -54,6 +63,10 @@ contract PolyDistribution is Ownable {
       require(AVAILABLE_TOTAL_SUPPLY == AVAILABLE_PRESALE_SUPPLY.add(AVAILABLE_FOUNDER_SUPPLY).add(AVAILABLE_AIRDROP_SUPPLY).add(AVAILABLE_ADVISOR_SUPPLY).add(AVAILABLE_BONUS1_SUPPLY).add(AVAILABLE_BONUS2_SUPPLY).add(AVAILABLE_BONUS3_SUPPLY).add(AVAILABLE_RESERVE_SUPPLY));
       startTime = _startTime;
       POLY = new PolyToken(this);
+    }
+
+    function setAirdropAdmin(address _admin, bool _isAdmin) public onlyOwner {
+      airdropAdmins[_admin] = _isAdmin;
     }
 
   /**
@@ -73,8 +86,8 @@ contract PolyDistribution is Ownable {
       AVAILABLE_FOUNDER_SUPPLY = AVAILABLE_FOUNDER_SUPPLY.sub(_totalAllocated);
       allocations[_recipient] = Allocation(uint8(AllocationType.FOUNDER), startTime + 1 years, startTime + 4 years, _totalAllocated, 0);
     } else if (_supply == AllocationType.AIRDROP) {
-      AVAILABLE_AIRDROP_SUPPLY = AVAILABLE_AIRDROP_SUPPLY.sub(_totalAllocated);
-      allocations[_recipient] = Allocation(uint8(AllocationType.AIRDROP), 0, 0, _totalAllocated, 0);
+      //AVAILABLE_AIRDROP_SUPPLY = AVAILABLE_AIRDROP_SUPPLY.sub(_totalAllocated);
+      //allocations[_recipient] = Allocation(uint8(AllocationType.AIRDROP), 0, 0, _totalAllocated, 0);
     } else if (_supply == AllocationType.ADVISOR) {
       AVAILABLE_ADVISOR_SUPPLY = AVAILABLE_ADVISOR_SUPPLY.sub(_totalAllocated);
       allocations[_recipient] = Allocation(uint8(AllocationType.ADVISOR), startTime + 212 days, 0, _totalAllocated, 0);
@@ -93,6 +106,56 @@ contract PolyDistribution is Ownable {
     }
     AVAILABLE_TOTAL_SUPPLY = AVAILABLE_TOTAL_SUPPLY.sub(_totalAllocated);
     LogNewAllocation(_recipient, _supply, _totalAllocated, grandTotalAllocated());
+  }
+
+  function performAirdropAllocation(address[] _recipient, uint[] _totalAllocated) public onlyOwnerOrAdmin {
+    uint accumAllocation;
+    for(uint8 i = 0; i< _recipient.length;i++)
+    {
+      if(airdropAllocations[_recipient[i]] == 0){
+        accumAllocation = accumAllocation.add(_totalAllocated[i]);
+        airdropAllocations[_recipient[i]] = _totalAllocated[i];
+      }
+    }
+    AVAILABLE_AIRDROP_SUPPLY = AVAILABLE_AIRDROP_SUPPLY.sub(accumAllocation);
+    AVAILABLE_TOTAL_SUPPLY = AVAILABLE_TOTAL_SUPPLY.sub(accumAllocation);
+
+  }
+
+  function deleteAirdropAllocation(address[] _recipient) public onlyOwnerOrAdmin {
+    uint accumAllocation;
+    for(uint8 i = 0; i< _recipient.length;i++)
+    {
+      if(!airdropWithdrawn[_recipient[i]] && airdropAllocations[_recipient[i]] != 0){
+        uint allocated = airdropAllocations[_recipient[i]];
+        accumAllocation = accumAllocation.add(allocated);
+        airdropAllocations[_recipient[i]] = 0;
+      }
+    }
+
+    AVAILABLE_AIRDROP_SUPPLY = AVAILABLE_AIRDROP_SUPPLY.add(accumAllocation);
+    AVAILABLE_TOTAL_SUPPLY = AVAILABLE_TOTAL_SUPPLY.add(accumAllocation);
+
+  }
+
+
+
+  function withdrawFromAirdrop(address[] _recipient) public {
+    require(now >= startTime);
+
+    uint accumWithdrawals;
+    for(uint8 i = 0; i< _recipient.length;i++)
+    {
+      if(!airdropWithdrawn[_recipient[i]] && airdropAllocations[_recipient[i]] != 0){
+        uint tokens = airdropAllocations[_recipient[i]];
+        airdropWithdrawn[_recipient[i]] = true;
+        accumWithdrawals = accumWithdrawals.add(tokens);
+        POLY.transfer(_recipient[i], tokens);
+      }
+    }
+
+    grandTotalClaimed = grandTotalClaimed.add(accumWithdrawals);
+
   }
 
   /**
