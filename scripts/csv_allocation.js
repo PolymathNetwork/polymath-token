@@ -397,7 +397,7 @@ async function doAllocationRaw(beneficiary, tokens, transactionCount) {
 
   let poly =  new web3.eth.Contract(ABI, polyDistributionAddress);
 
-  var funcData = poly.methods.setAllocation(beneficiary,tokens,2).encodeABI();
+  var funcData = poly.methods.setAllocation(beneficiary,new BigNumber(tokens * (10 ** 18)),2).encodeABI();
   var rawTx = {
     nonce: web3.utils.toHex(transactionCount),
     gasLimit: web3.utils.toHex(200000),
