@@ -127,6 +127,7 @@ contract PolyDistribution is Ownable {
     }
     AVAILABLE_AIRDROP_SUPPLY = AVAILABLE_AIRDROP_SUPPLY.sub(airdropped);
     AVAILABLE_TOTAL_SUPPLY = AVAILABLE_TOTAL_SUPPLY.sub(airdropped);
+    grandTotalClaimed = grandTotalClaimed.add(airdropped);
   }
 
   /**
