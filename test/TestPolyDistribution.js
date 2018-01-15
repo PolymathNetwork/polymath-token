@@ -59,12 +59,24 @@ contract('PolyDistribution', function(accounts) {
   let account_presale   = accounts[1];
   let account_founder1  = accounts[2];
   let account_founder2  = accounts[3];
-  let account_airdrop1  = accounts[4];
-  let account_airdrop2  = accounts[5];
   let account_bonus1    = accounts[6];
   let account_advisor1  = accounts[7];
   let account_advisor2  = accounts[8];
   let account_reserve   = accounts[9];
+
+  let account_admin1  = accounts[4];
+
+  let airdrop_massive = new Array();
+  for (var i = 0; i< 50; i++){
+    var acc = web3.eth.accounts.create();
+    airdrop_massive[i] = acc.address;
+  }
+
+  let airdrop_massive2 = new Array();
+  for (var i = 0; i< 50; i++){
+    var acc = web3.eth.accounts.create();
+    airdrop_massive2[i] = acc.address;
+  }
 
   let allocationStruct = {
     AllocationSupply: 0,    // Type of allocation
@@ -122,10 +134,6 @@ contract('PolyDistribution', function(accounts) {
             oldPresaleSupply = await polyDistribution.AVAILABLE_FOUNDER_SUPPLY({from:account_owner});
             allocationTypeNum = 1;
           break;
-        case "AIRDROP":
-            oldPresaleSupply = await polyDistribution.AVAILABLE_AIRDROP_SUPPLY({from:account_owner});
-            allocationTypeNum = 2;
-          break;
         case "ADVISOR":
             oldPresaleSupply = await polyDistribution.AVAILABLE_ADVISOR_SUPPLY({from:account_owner});
             allocationTypeNum = 3;
@@ -168,9 +176,6 @@ contract('PolyDistribution', function(accounts) {
           break;
         case "FOUNDER":
           newPresaleSupply = await polyDistribution.AVAILABLE_FOUNDER_SUPPLY({from:account_owner});
-          break;
-        case "AIRDROP":
-          newPresaleSupply = await polyDistribution.AVAILABLE_AIRDROP_SUPPLY({from:account_owner});
           break;
         case "ADVISOR":
           newPresaleSupply = await polyDistribution.AVAILABLE_ADVISOR_SUPPLY({from:account_owner});
@@ -257,30 +262,6 @@ contract('PolyDistribution', function(accounts) {
 
         let tokensToAllocate = 175000;
         doAllocationTests("FOUNDER",tokensToAllocate,account_founder2);
-
-        after(async() => {
-          oldTotalSupply = new BigNumber(oldTotalSupply.minus(tokensToAllocate));
-          grantTotalAllocationSum = new BigNumber(grantTotalAllocationSum.plus(tokensToAllocate));
-        });
-
-      });
-
-      describe("AIRDROP 1 Allocation", async function () {
-
-        let tokensToAllocate = 50;
-        doAllocationTests("AIRDROP",tokensToAllocate,account_airdrop1);
-
-        after(async() => {
-          oldTotalSupply = new BigNumber(oldTotalSupply.minus(tokensToAllocate));
-          grantTotalAllocationSum = new BigNumber(grantTotalAllocationSum.plus(tokensToAllocate));
-        });
-
-      });
-
-      describe("AIRDROP 2 Allocation", async function () {
-
-        let tokensToAllocate = 75;
-        doAllocationTests("AIRDROP",tokensToAllocate,account_airdrop2);
 
         after(async() => {
           oldTotalSupply = new BigNumber(oldTotalSupply.minus(tokensToAllocate));
@@ -485,100 +466,76 @@ contract('PolyDistribution', function(accounts) {
 
         });
 
-      });
+        it("should perform the AIRDROP for 50 accounts", async function () {
+          await polyDistribution.airdropTokens(airdrop_massive,{from:accounts[0]});
 
-      describe("Withdraw 6 months after allocations", async function () {
-
-        before(async() => {
-          //Time travel to startTime + 6 months;
-            await timeTravel((3600 * 24 * 180))// Move forward in time so the crowdsale has started
-            await mineBlock() // workaround for https://github.com/ethereumjs/testrpc/issues/336
         });
 
-        it("should withdraw AIRDROP tokens", async function () {
-          let currentBlock = await web3.eth.getBlock("latest");
+        it("airdrop accounts should have 250 POLY each", async function () {
+          for (var i = 0; i< airdrop_massive.length; i++){
+            let tokenBalance = await polyToken.balanceOf(airdrop_massive[i],{from:accounts[0]});
+            assert.equal(tokenBalance.toString(10), "250000000000000000000");
 
-          // Check token balance for account before calling transferTokens, then check afterwards.
-          let tokenBalance = await polyToken.balanceOf(account_airdrop1,{from:accounts[0]});
-          await polyDistribution.transferTokens(account_airdrop1,{from:accounts[0]});
-          let new_tokenBalance = await polyToken.balanceOf(account_airdrop1,{from:accounts[0]});
-
-          //PRESALE tokens are completely distributed once allocated as they have no vesting period nor cliff
-          let allocation = await polyDistribution.allocations(account_airdrop1,{from:account_owner});
-
-          logWithdrawalData("AIRDROP",currentBlock.timestamp,account_airdrop1,contractStartTime,allocation,new_tokenBalance);
-
-          let expectedTokenBalance = calculateExpectedTokens(allocation,currentBlock.timestamp,contractStartTime);
-          assert.equal(expectedTokenBalance.toString(10),new_tokenBalance.toString(10));
-        });
-
-      });
-
-      describe("Withdraw 9 months after allocations", async function () {
-
-        before(async() => {
-          //Time travel to startTime + 9 months;
-            await timeTravel((3600 * 24 * 90))// Move forward in time so the crowdsale has started
-            await mineBlock() // workaround for https://github.com/ethereumjs/testrpc/issues/336
-        });
-
-        it("should fail to withdraw AIRDROP 1 tokens as they have already been fully distributed", async function () {
-
-          try {
-            await polyDistribution.transferTokens(account_airdrop1,{from:accounts[0]});
-          } catch (error) {
-              let currentBlock = await web3.eth.getBlock("latest");
-
-              let new_tokenBalance = await polyToken.balanceOf(account_airdrop1,{from:accounts[0]});
-              let allocation = await polyDistribution.allocations(account_airdrop1,{from:account_owner});
-              logWithdrawalData("AIRDROP",currentBlock.timestamp,account_airdrop1,contractStartTime,allocation,new_tokenBalance);
-
-              logError("✅   Failed to withdraw");
-              return true;
           }
-          throw new Error("I should never see this!")
+        });
+
+        it("should set another admin for airdrop", async function () {
+          await polyDistribution.setAirdropAdmin(account_admin1,true,{from:accounts[0]});
 
         });
 
-        // it("should withdraw AIRDROP tokens", async function () {
-        //   let currentBlock = await web3.eth.getBlock("latest");
-        //
-        //   // Check token balance for account before calling transferTokens, then check afterwards.
-        //   let tokenBalance = await polyToken.balanceOf(account_airdrop1,{from:accounts[0]});
-        //   await polyDistribution.transferTokens(account_airdrop1,{from:accounts[0]});
-        //   let new_tokenBalance = await polyToken.balanceOf(account_airdrop1,{from:accounts[0]});
-        //
-        //   //PRESALE tokens are completely distributed once allocated as they have no vesting period nor cliff
-        //   let allocation = await polyDistribution.allocations(account_airdrop1,{from:account_owner});
-        //
-        //   logWithdrawalData("AIRDROP",currentBlock.timestamp,account_airdrop1,contractStartTime,allocation,new_tokenBalance);
-        //
-        // });
+        it("should perform the AIRDROP for 50 accounts with an admin", async function () {
+          await polyDistribution.airdropTokens(airdrop_massive2,{from:account_admin1});
 
-        it("should withdraw AIRDROP tokens", async function () {
+        });
+
+        it("airdrop accounts should have 250 POLY each", async function () {
+          for (var i = 0; i< airdrop_massive2.length; i++){
+            let tokenBalance = await polyToken.balanceOf(airdrop_massive2[i],{from:accounts[0]});
+            assert.equal(tokenBalance.toString(10), "250000000000000000000");
+
+          }
+        });
+
+
+
+      });
+
+      describe("Withdraw 8 months after allocations", async function () {
+
+        before(async() => {
+          //Time travel to startTime + 8 months;
+            await timeTravel((3600 * 24 * 240))// Move forward in time so the crowdsale has started
+            await mineBlock() // workaround for https://github.com/ethereumjs/testrpc/issues/336
+        });
+
+        it("should withdraw RESERVE tokens", async function () {
           let currentBlock = await web3.eth.getBlock("latest");
 
           // Check token balance for account before calling transferTokens, then check afterwards.
-          let tokenBalance = await polyToken.balanceOf(account_airdrop2,{from:accounts[0]});
-          await polyDistribution.transferTokens(account_airdrop2,{from:accounts[0]});
-          let new_tokenBalance = await polyToken.balanceOf(account_airdrop2,{from:accounts[0]});
+          let tokenBalance = await polyToken.balanceOf(account_reserve,{from:accounts[0]});
+          await polyDistribution.transferTokens(account_reserve,{from:accounts[0]});
+          let new_tokenBalance = await polyToken.balanceOf(account_reserve,{from:accounts[0]});
 
           //PRESALE tokens are completely distributed once allocated as they have no vesting period nor cliff
-          let allocation = await polyDistribution.allocations(account_airdrop2,{from:account_owner});
+          let allocation = await polyDistribution.allocations(account_reserve,{from:account_owner});
 
-          logWithdrawalData("AIRDROP",currentBlock.timestamp,account_airdrop2,contractStartTime,allocation,new_tokenBalance);
+          logWithdrawalData("RESERVE",currentBlock.timestamp,account_reserve,contractStartTime,allocation,new_tokenBalance);
 
           let expectedTokenBalance = calculateExpectedTokens(allocation,currentBlock.timestamp,contractStartTime);
           assert.equal(expectedTokenBalance.toString(10),new_tokenBalance.toString(10));
         });
 
+
       });
+
+
 
       describe("Withdraw 15 months after allocations", async function () {
 
         before(async() => {
-          //Time travel to startTime + 9 months;
-            await timeTravel((3600 * 24 * 180))// Move forward in time so the crowdsale has started
+          //Time travel to startTime + 15 months;
+            await timeTravel((3600 * 24 * 210))// Move forward in time so the crowdsale has started
             await mineBlock() // workaround for https://github.com/ethereumjs/testrpc/issues/336
         });
 

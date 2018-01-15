@@ -9,6 +9,7 @@
   "scripts": {
     "test": "scripts/test.sh",
     "compile": "truffle compile",
+    "coverage": "./node_modules/.bin/solidity-coverage",
     "migrate-local": "truffle migrate --network=local --reset",
     "migrate-ropsten": "truffle migrate --network=ropsten --reset",
     "flatten": "sol-merger './contracts/*.sol' ./flat"
