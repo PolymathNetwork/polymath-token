@@ -47,7 +47,7 @@ async function setAllocation() {
     if(prevAllocation[3].toNumber() ==0){
       try{
         console.log("Attempting to allocate",distribData[i][0], "to account",distribData[i][1]);
-        polyDistribution.setAllocation(distribData[i][1],new BigNumber(distribData[i][0] * (10 ** 18)),2,{from:accounts[0], gas:300000, gasPrice:5000000000});
+        polyDistribution.setAllocation(distribData[i][1],new BigNumber(distribData[i][0] * (10 ** 18)),2,{from:accounts[0], gas:300000, gasPrice:20000000000});
         //let allocation = await polyDistribution.allocations(distribData[i][1],{from:accounts[0]});
         //console.log(r);
         //console.log("Allocated", allocation[3].toString(10), "tokens for account:",distribData[i][1]);

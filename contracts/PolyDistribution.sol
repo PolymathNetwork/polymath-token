@@ -41,9 +41,11 @@ contract PolyDistribution is Ownable {
     uint256 amountClaimed;  // Total tokens claimed
   }
   mapping (address => Allocation) public allocations;
-  
+
+  // List of admins
   mapping (address => bool) public airdropAdmins;
-  
+
+  // Keeps track of whether or not a 250 POLY airdrop has been made to a particular address
   mapping (address => bool) public airdrops;
 
   modifier onlyOwnerOrAdmin() {
@@ -100,30 +102,27 @@ contract PolyDistribution is Ownable {
     AVAILABLE_TOTAL_SUPPLY = AVAILABLE_TOTAL_SUPPLY.sub(_totalAllocated);
     LogNewAllocation(_recipient, _supply, _totalAllocated, grandTotalAllocated());
   }
-  
+
   /**
     * @dev Add an airdrop admin
-    * @param _admin
-    * @param _isAdmin
     */
   function setAirdropAdmin(address _admin, bool _isAdmin) public onlyOwner {
     airdropAdmins[_admin] = _isAdmin;
   }
-  
+
   /**
     * @dev perform a transfer of allocations
-    * @param _reciepients
-    * @param _allocated
+    * @param _recipient is a list of recipients
     */
   function airdropTokens(address[] _recipient) public onlyOwnerOrAdmin {
-    require(_startTime >= now);
+    require(now >= startTime);
     uint airdropped;
     for(uint8 i = 0; i< _recipient.length; i++)
     {
         if (!airdrops[_recipient[i]]) {
           airdrops[_recipient[i]] = true;
-          require(POLY.transfer(_recipient[i], 250*(decimalsFactor));
-          airdropped = airdropped.add(250*decimalsFactor);
+          require(POLY.transfer(_recipient[i], 250 * decimalFactor));
+          airdropped = airdropped.add(250 * decimalFactor);
         }
     }
     AVAILABLE_AIRDROP_SUPPLY = AVAILABLE_AIRDROP_SUPPLY.sub(airdropped);
