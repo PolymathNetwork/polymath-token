@@ -95,7 +95,8 @@ function readFile() {
 
   var csvStream = csv()
       .on("data", function(data){
-          if(data[0]!=null && data[0]!='' ){
+          let isAddress = web3.utils.isAddress(data[0]);
+          if(isAddress && data[0]!=null && data[0]!='' ){
             allocData.push(data[0]);
 
             index++;
