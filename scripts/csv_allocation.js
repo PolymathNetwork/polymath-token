@@ -78,7 +78,7 @@ async function setAllocation() {
 
 
 function readFile() {
-  var stream = fs.createReadStream("scripts/distrib.csv");
+  var stream = fs.createReadStream("scripts/data/airdrop_distrib.csv");
 
   let index = 0;
   let batch = 0;
