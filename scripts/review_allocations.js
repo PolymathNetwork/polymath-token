@@ -51,7 +51,7 @@ async function listAllocations() {
     let bal = await polyToken.balanceOf(polyDistribution.address);
     console.log("BAL",bal);
 
-    var events = await polyToken.Transfer({},{fromBlock: 0, toBlock: 'latest'});
+    var events = await polyToken.Transfer({from: polyDistribution.address},{fromBlock: 0, toBlock: 'latest'});
     events.get(function(error, log) {
         event_data = log;
         //console.log(log);
