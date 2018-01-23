@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+  <title>Poly Token Distribution</title>
+
+  <!-- Bootstrap -->
+  <link href="css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+  <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+  <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+
+
+</head>
+
+<body>
+  <div class="container">
+    <div class="row">
+
+      <ul class="nav nav-tabs" role="tablist">
+        <li role="presentation" class="active">
+          <a href="#home" aria-controls="home" role="tab" data-toggle="tab">Overall</a>
+        </li>
+        <li role="presentation">
+          <a href="#profile" aria-controls="profile" role="tab" data-toggle="tab">Airdrop</a>
+        </li>
+        <!-- <li role="presentation">
+          <a href="#messages" aria-controls="messages" role="tab" data-toggle="tab">Messages</a>
+        </li>
+        <li role="presentation">
+          <a href="#settings" aria-controls="settings" role="tab" data-toggle="tab">Settings</a>
+        </li> -->
+      </ul>
+
+      <!-- Tab panes -->
+      <div class="tab-content">
+        <div role="tabpanel" class="tab-pane active" id="home">
+          <div class="row">
+            <div class="col-xs-12 col-sm-8 col-sm-push-2 text-center">
+              <h1>Poly Token Distribution</h1>
+              <hr/>
+
+              <input type="text" class="form-control" id="recipient_address" />
+              <button class="btn btn-primary" id="allocation_button">Send Allocation</button>
+              <button class="btn btn-primary" id="transaction_button">Send Transaction</button>
+            </div>
+            <div id="gauge1" class="400x320px"></div>
+          </div>
+          <div class="row">
+            <div class="col-sm-6">
+              <div id="gauge2" class="200x160px"></div>
+            </div>
+            <div class="col-sm-6">
+              <div id="gauge3" class="200x160px"></div>
+            </div>
+          </div>
+          <div class="row">
+            <h4>Presale Supply Balance (
+              <span id="PresaleSupply_Balance"></span>/240000000 POLY)</h4>
+            <div class="progress">
+              <div class="progress-bar" id="presale_progress" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"
+                style="width: 1%;">
+                1%
+              </div>
+            </div>
+            <h4>Founder Supply Balance (
+              <span id="FounderSupply_Balance"></span>/150000000 POLY)</h4>
+            <div class="progress">
+              <div class="progress-bar" id="founder_progress" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"
+                style="width: 1%;">
+                1%
+              </div>
+            </div>
+            <h4>Airdrop Supply Balance (
+              <span id="AirdropSupply_Balance"></span>/10000000 POLY)</h4>
+            <div class="progress">
+              <div class="progress-bar" id="airdrop_progress" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"
+                style="width: 1%;">
+                1%
+              </div>
+            </div>
+            <h4>Advisor Supply Balance (
+              <span id="AdvisorSupply_Balance"></span>/25000000 POLY)</h4>
+            <div class="progress">
+              <div class="progress-bar" id="advisor_progress" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"
+                style="width: 1%;">
+                1%
+              </div>
+            </div>
+            <h4>Reserve Supply Balance (
+              <span id="ReserveSupply_Balance"></span>/495000000 POLY)</h4>
+            <div class="progress">
+              <div class="progress-bar" id="reserve_progress" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"
+                style="width: 1%;">
+                1%
+              </div>
+            </div>
+            <h4>Bonus 1 Supply Balance (
+              <span id="Bonus1_Balance"></span>/20000000 POLY)</h4>
+            <div class="progress">
+              <div class="progress-bar" id="bonus1_progress" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"
+                style="width: 1%;">
+                1%
+              </div>
+            </div>
+            <h4>Bonus 2 Supply Balance (
+              <span id="Bonus2_Balance"></span>/30000000 POLY)</h4>
+            <div class="progress">
+              <div class="progress-bar" id="bonus2_progress" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"
+                style="width: 1%;">
+                1%
+              </div>
+            </div>
+            <h4>Bonus 3 Supply Balance (
+              <span id="Bonus3_Balance"></span>/30000000 POLY)</h4>
+            <div class="progress">
+              <div class="progress-bar" id="bonus3_progress" role="progressbar" aria-valuenow="100" aria-valuemin="0" aria-valuemax="100"
+                style="width: 1%;">
+                1%
+              </div>
+            </div>
+          </div>
+        </div>
+        <div role="tabpanel" class="tab-pane" id="profile">
+          <table class="table table-striped" id="table_div">
+            <tr>
+              <td>Recipient</td>
+              <td>Tokens</td>
+            </tr>
+          </table>
+        </div>
+        <!-- <div role="tabpanel" class="tab-pane" id="messages">...3</div>
+        <div role="tabpanel" class="tab-pane" id="settings">...4</div> -->
+      </div>
+
+
+    </div>
+
+
+
+
+
+
+    <div id="petsRow" class="row">
+
+
+
+      <div class="row">
+
+
+
+        <p>Total Allocated:
+          <span id="total_allocated"></span>
+        </p>
+        <p>Total Claimed:
+          <span id="total_claimed"></span>
+        </p>
+        <!-- <h4>Total Supply</h4>
+        <span id="TotalSupply_Balance"></span> POLY
+        <h4>Presale Supply</h4>
+        <span id="PresaleSupply_Balance"></span> POLY
+        <h4>Founder Supply</h4>
+        <span id="FounderSupply_Balance"></span> POLY
+        <h4>Airdrop Supply</h4>
+        <span id="AirdropSupply_Balance"></span> POLY
+        <h4>Advisor Supply</h4>
+        <span id="AdvisorSupply_Balance"></span> POLY -->
+      </div>
+
+
+
+
+      <!-- <div class="col-sm-6 col-sm-push-3 col-md-4 col-md-push-4">
+        <div class="panel panel-default">
+          <div class="panel-heading">
+            <h3 class="panel-title">Send POLY</h3>
+          </div>
+          <div class="panel-body">
+            <h4>Balance</h4>
+            <strong>Balance</strong>:
+            <span id="TTBalance"></span> POLY
+            <br/>
+            <br/>
+            <h4>Transfer</h4>
+            <input type="text" class="form-control" id="TTTransferAddress" placeholder="Address" />
+            <input type="text" class="form-control" id="TTTransferAmount" placeholder="Amount" />
+            <button class="btn btn-primary" id="transferButton" type="button">Transfer</button>
+          </div>
+        </div>
+      </div> -->
+    </div>
+  </div>
+
+  <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+  <script src="js/libs/raphael-2.1.4.min.js"></script>
+  <script src="js/libs/justgage.js"></script>
+  <!-- <script src="js/libs/gauge.js"></script> -->
+  <!-- Include all compiled plugins (below), or include individual files as needed -->
+  <script src="js/bootstrap.min.js"></script>
+  <script src="js/web3.min.js"></script>
+  <script src="js/truffle-contract.js"></script>
+  <script src="js/app.js"></script>
+
+
+
+</body>
+
+</html>
