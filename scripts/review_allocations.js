@@ -49,7 +49,6 @@ async function listAllocations() {
     //console.log(polyToken);
 
     let bal = await polyToken.balanceOf(polyDistribution.address);
-    console.log("BAL",bal);
 
     var events = await polyToken.Transfer({from: polyDistribution.address},{fromBlock: 0, toBlock: 'latest'});
     events.get(function(error, log) {
@@ -58,7 +57,8 @@ async function listAllocations() {
         for (var i=0; i<event_data.length;i++){
             let tokens = event_data[i].args.value.times(10 ** -18).toString(10);
             let addressB = event_data[i].args.to;
-            console.log(`Distributed ${tokens} POLY to address ${addressB}`);
+            //console.log(`Distributed ${tokens} POLY to address ${addressB}`);
+            console.log(`${addressB},${tokens}`);
         }
     });
 
