@@ -30,6 +30,8 @@ let ALLOC_TYPE = parseInt(process.argv.slice(2)[1]);
 if(!ALLOC_TYPE) ALLOC_TYPE = 0;
 let allocData = new Array();
 
+let ALLOC_STRING = new Array("PRESALE","FOUNDER","AIRDROP","ADVISOR","RESERVE","BONUS1","BONUS2","BONUS3");
+
 async function verifyAllocation() {
 
   console.log(`
@@ -50,9 +52,16 @@ async function verifyAllocation() {
 
         let prevAllocation = await polyDistribution.allocations(allocData[i][0],{from:accounts[0]});
         let tokens = new BigNumber(allocData[i][1]);
+        parsedAlloc = parseInt(web3.utils.fromWei(prevAllocation[3].toString(10)));
         if(prevAllocation[3].toNumber() ==0){
             failedAllocs +=1;
             console.log('\x1b[31m%s\x1b[0m',`Account ${allocData[i][0]} has not been allocated any POLY, review the transaction logs on Etherscan`);
+        }else if (prevAllocation[0].toNumber() != ALLOC_TYPE){
+            failedAllocs +=1;
+            console.log('\x1b[31m%s\x1b[0m',`Existing allocation for account ${allocData[i][0]}. This account has already been allocated POLY of type ${ALLOC_STRING[prevAllocation[0]]}`);
+        }else if (parsedAlloc != allocData[i][1]){
+            failedAllocs +=1;
+            console.log('\x1b[31m%s\x1b[0m',`Existing allocation for account ${allocData[i][0]} (${parsedAlloc} POLY) does not match the contents of the file (${allocData[i][1]} POLY). `);
         }else{
             sumAllocations += parseInt(web3.utils.fromWei(prevAllocation[3].toString(10)));
             sumAccountsAllocated +=1;
@@ -60,7 +69,8 @@ async function verifyAllocation() {
     }
 
     console.log(`File contains ${allocData.length} valid addresses`);
-    console.log('\x1b[31m%s\x1b[0m',`${failedAllocs} allocations have failed, review them.`);
+    if(failedAllocs >0)
+        console.log('\x1b[31m%s\x1b[0m',`${failedAllocs} allocations have failed, review them.`);
     console.log('\x1b[32m%s\x1b[0m',`${sumAllocations} POLY have been allocated to ${sumAccountsAllocated} accounts`);
 }
 
