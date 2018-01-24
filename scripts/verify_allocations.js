@@ -30,50 +30,38 @@ let ALLOC_TYPE = parseInt(process.argv.slice(2)[1]);
 if(!ALLOC_TYPE) ALLOC_TYPE = 0;
 let allocData = new Array();
 
-async function setAllocation() {
+async function verifyAllocation() {
 
   console.log(`
     --------------------------------------------
-    ---------Performing allocations ------------
+    ---------Reviewing allocations ------------
     --------------------------------------------
   `);
 
     var sumAllocations = 0;
     var sumAccountsAllocated = 0;
+    var failedAllocs = 0;
 
     let accounts = await web3.eth.getAccounts();
     let userBalance = await web3.eth.getBalance(accounts[0]);
 
     let polyDistribution = await PolyDistribution.at(polyDistributionAddress);
-    console.log(allocData);
     for(var i = 0;i< allocData.length;i++){
 
         let prevAllocation = await polyDistribution.allocations(allocData[i][0],{from:accounts[0]});
         let tokens = new BigNumber(allocData[i][1]);
         if(prevAllocation[3].toNumber() ==0){
-            try{
-
-                let receipt = await polyDistribution.setAllocation(allocData[i][0],web3.utils.toWei(tokens.toString(10)),ALLOC_TYPE,{from:accounts[0], gas:200000});
-                if(receipt && receipt.logs.length >0){
-                    let tokensAllocated = receipt.logs[0].args._totalAllocated.times(10 ** -18).toString(10);
-                    console.log("Allocated", tokensAllocated, "tokens for account:",allocData[i][0]);
-                    sumAllocations += tokens.toNumber();
-                    sumAccountsAllocated +=1;
-                }else{
-                    console.log("Tried to allocate", tokens.toString(10), "POLY tokens for account:",allocData[i][0]);
-                    console.log('\x1b[31m%s\x1b[0m',"ERROR, allocation was not successful. The most probable cause is that the intended allocation exceeds the remaining supply.");
-                }
-
-            } catch (err){
-            console.log(err);
-          }
+            failedAllocs +=1;
+            console.log('\x1b[31m%s\x1b[0m',`Account ${allocData[i][0]} has not been allocated any POLY, review the transaction logs on Etherscan`);
         }else{
-          console.log('\x1b[31m%s\x1b[0m',"SKIPPED token allocation for account:",allocData[i][0],". Account already has", prevAllocation[3].toString(10));
+            sumAllocations += parseInt(web3.utils.fromWei(prevAllocation[3].toString(10)));
+            sumAccountsAllocated +=1;
         }
     }
 
-    console.log('\x1b[32m%s\x1b[0m',"Successfully allocated",sumAllocations, "POLY tokens to ", sumAccountsAllocated,"accounts");
-
+    console.log(`File contains ${allocData.length} valid addresses`);
+    console.log('\x1b[31m%s\x1b[0m',`${failedAllocs} allocations have failed, review them.`);
+    console.log('\x1b[32m%s\x1b[0m',`${sumAllocations} POLY have been allocated to ${sumAccountsAllocated} accounts`);
 }
 
 
@@ -132,7 +120,7 @@ function readFile() {
       .on("end", function(){
            //Add last remainder batch
            //console.log(allocData);
-           setAllocation();
+           verifyAllocation();
       });
 
   stream.pipe(csvStream);
