@@ -13,6 +13,7 @@ module.exports = async (deployer, network) => {
     - Contract address: ${PolyDistribution.address}
     - Distribution starts in: ${_fromNow/1000/60} minutes
     - Local Time: ${new Date(_now + _fromNow)}
+    - Deployed Bytecode: ${PolyDistribution.bytecode}
     ---------------------------------------------------------------
   `);
 };
