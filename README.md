@@ -31,4 +31,4 @@ airdrop!
 1. Run `truffle migrate` to deploy the distribution and POLY token contract. Take note of the address of the PolyDistribution contract.
 2. Add a csv file named `airdrop_distrib.csv` to the scripts folder. It should contain one valid address per row.
 3. Run `node scripts/csv_allocation.js [ADDRESS of POLYDISTRIBUTION]` This will process the airdrop_distrib.csv file and transfer 250 POLY to each address.
-4. Run `node scripts/review_allocations.js [ADDRESS of POLYDISTRIBUTION] > scripts/data/review.csv` to retrieve the event log of the distribution and output it to a csv file you can use to compare the intended distribution and the results.
+4. Run `node scripts/verify_airdrop.js [ADDRESS of POLYDISTRIBUTION] > scripts/data/review.csv` to retrieve the event log of the distribution and output it to a csv file you can use to compare the intended distribution and the results.

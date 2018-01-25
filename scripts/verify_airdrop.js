@@ -53,6 +53,8 @@ async function listAllocations() {
     var events = await polyToken.Transfer({from: polyDistribution.address},{fromBlock: 0, toBlock: 'latest'});
     events.get(function(error, log) {
         event_data = log;
+        console.log("Retrieving logs to inform total amount of tokens distributed so far. This may take a while...")
+
         //console.log(log);
         for (var i=0; i<event_data.length;i++){
             let tokens = event_data[i].args.value.times(10 ** -18).toString(10);

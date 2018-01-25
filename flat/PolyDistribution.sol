@@ -14,6 +14,29 @@ contract IERC20 {
   event Approval(address indexed owner, address indexed spender, uint256 value);
 }
 
+/*
+Copyright (c) 2016 Smart Contract Solutions, Inc.
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to
+the following conditions:
+
+The above copyright notice and this permission notice shall be included
+in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*/
+
 /**
  * @title SafeMath
  * @dev Math operations with safety checks that throw on error
@@ -181,6 +204,29 @@ contract PolyToken is IERC20 {
 
 }
 
+/*
+Copyright (c) 2016 Smart Contract Solutions, Inc.
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to
+the following conditions:
+
+The above copyright notice and this permission notice shall be included
+in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
+IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
+CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
+TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
+SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+*/
+
 /**
  * @title Ownable
  * @dev The Ownable contract has an owner address, and provides basic authorization control
@@ -222,23 +268,27 @@ contract Ownable {
 /**
  * @title POLY token initial distribution
  *
- * @dev Distribute investor, airdrop, reserve, and founder tokens
+ * @dev Distribute purchasers, airdrop, reserve, and founder tokens
  */
 contract PolyDistribution is Ownable {
   using SafeMath for uint256;
 
   PolyToken public POLY;
 
-  uint256 private constant decimals = 10**uint256(18);
-  enum AllocationType { PRESALE, FOUNDER, AIRDROP, ADVISOR, BONUS, RESERVE }
-  uint256 public AVAILABLE_TOTAL_SUPPLY    = 1000000000 * decimals;
-  uint256 public AVAILABLE_PRESALE_SUPPLY  = 240000000 * decimals; // 100% Released on Token Distribution (TD)
-  uint256 public AVAILABLE_FOUNDER_SUPPLY  = 150000000 * decimals; // 25% Released TD +1 year + 100% released TD +4 years
-  uint256 public AVAILABLE_AIRDROP_SUPPLY  = 10000000 * decimals;  // 10% Released on TD
-  uint256 public AVAILABLE_ADVISOR_SUPPLY  = 25000000 * decimals;  // 100% Released on TD +
-  uint256 public AVAILABLE_BONUS_SUPPLY    = 80000000 * decimals;  //
-  uint256 public AVAILABLE_RESERVE_SUPPLY  = 495000000 * decimals; // 10M Released every month after
-  uint256 public grandTotalAllocated = 0;
+  uint256 private constant decimalFactor = 10**uint256(18);
+  enum AllocationType { PRESALE, FOUNDER, AIRDROP, ADVISOR, RESERVE, BONUS1, BONUS2, BONUS3 }
+  uint256 public constant INITIAL_SUPPLY   = 1000000000 * decimalFactor;
+  uint256 public AVAILABLE_TOTAL_SUPPLY    = 1000000000 * decimalFactor;
+  uint256 public AVAILABLE_PRESALE_SUPPLY  =  240000000 * decimalFactor; // 100% Released at Token Distribution (TD)
+  uint256 public AVAILABLE_FOUNDER_SUPPLY  =  150000000 * decimalFactor; // 25% Released at TD +1 year -> 100% at TD +4 years
+  uint256 public AVAILABLE_AIRDROP_SUPPLY  =   10000000 * decimalFactor; // 100% Released at TD
+  uint256 public AVAILABLE_ADVISOR_SUPPLY  =   25000000 * decimalFactor; // 100% Released at TD +7 months
+  uint256 public AVAILABLE_RESERVE_SUPPLY  =  495000000 * decimalFactor; // 12.5% Released at TD +6 months -> 100% at TD +4 years
+
+  uint256 public AVAILABLE_BONUS1_SUPPLY  =    20000000 * decimalFactor;
+  uint256 public AVAILABLE_BONUS2_SUPPLY  =    30000000 * decimalFactor;
+  uint256 public AVAILABLE_BONUS3_SUPPLY  =    30000000 * decimalFactor;
+
   uint256 public grandTotalClaimed = 0;
   uint256 public startTime;
 
@@ -252,8 +302,19 @@ contract PolyDistribution is Ownable {
   }
   mapping (address => Allocation) public allocations;
 
-  event LogNewAllocation(address _recipient, uint8 _fromSupply, uint256 _totalAllocated, uint256 _grandTotalAllocated);
-  event LogPolyClaimed(address _recipient, uint8 _fromSupply, uint256 _amountClaimed, uint256 _totalAllocated, uint256 _grandTotalClaimed);
+  // List of admins
+  mapping (address => bool) public airdropAdmins;
+
+  // Keeps track of whether or not a 250 POLY airdrop has been made to a particular address
+  mapping (address => bool) public airdrops;
+
+  modifier onlyOwnerOrAdmin() {
+    require(msg.sender == owner || airdropAdmins[msg.sender]);
+    _;
+  }
+
+  event LogNewAllocation(address indexed _recipient, AllocationType indexed _fromSupply, uint256 _totalAllocated, uint256 _grandTotalAllocated);
+  event LogPolyClaimed(address indexed _recipient, uint8 indexed _fromSupply, uint256 _amountClaimed, uint256 _totalAllocated, uint256 _grandTotalClaimed);
 
   /**
     * @dev Constructor function - Set the poly token address
@@ -261,7 +322,7 @@ contract PolyDistribution is Ownable {
     */
     function PolyDistribution(uint256 _startTime) public {
       require(_startTime >= now);
-      require(AVAILABLE_TOTAL_SUPPLY == AVAILABLE_PRESALE_SUPPLY.add(AVAILABLE_FOUNDER_SUPPLY).add(AVAILABLE_AIRDROP_SUPPLY).add(AVAILABLE_ADVISOR_SUPPLY).add(AVAILABLE_BONUS_SUPPLY).add(AVAILABLE_RESERVE_SUPPLY));
+      require(AVAILABLE_TOTAL_SUPPLY == AVAILABLE_PRESALE_SUPPLY.add(AVAILABLE_FOUNDER_SUPPLY).add(AVAILABLE_AIRDROP_SUPPLY).add(AVAILABLE_ADVISOR_SUPPLY).add(AVAILABLE_BONUS1_SUPPLY).add(AVAILABLE_BONUS2_SUPPLY).add(AVAILABLE_BONUS3_SUPPLY).add(AVAILABLE_RESERVE_SUPPLY));
       startTime = _startTime;
       POLY = new PolyToken(this);
     }
@@ -272,32 +333,61 @@ contract PolyDistribution is Ownable {
     * @param _totalAllocated The total amount of POLY available to the receipient (after vesting)
     * @param _supply The POLY supply the allocation will be taken from
     */
-  function setAllocation (address _recipient, uint256 _totalAllocated, uint8 _supply) onlyOwner public {
+  function setAllocation (address _recipient, uint256 _totalAllocated, AllocationType _supply) onlyOwner public {
     require(allocations[_recipient].totalAllocated == 0 && _totalAllocated > 0);
-    require(_supply >= 0 && _supply <= 5);
+    require(_supply >= AllocationType.PRESALE && _supply <= AllocationType.BONUS3);
     require(_recipient != address(0));
-    if (_supply == 0) {
+    if (_supply == AllocationType.PRESALE) {
       AVAILABLE_PRESALE_SUPPLY = AVAILABLE_PRESALE_SUPPLY.sub(_totalAllocated);
       allocations[_recipient] = Allocation(uint8(AllocationType.PRESALE), 0, 0, _totalAllocated, 0);
-    } else if (_supply == 1) {
+    } else if (_supply == AllocationType.FOUNDER) {
       AVAILABLE_FOUNDER_SUPPLY = AVAILABLE_FOUNDER_SUPPLY.sub(_totalAllocated);
       allocations[_recipient] = Allocation(uint8(AllocationType.FOUNDER), startTime + 1 years, startTime + 4 years, _totalAllocated, 0);
-    } else if (_supply == 2) {
-      AVAILABLE_AIRDROP_SUPPLY = AVAILABLE_AIRDROP_SUPPLY.sub(_totalAllocated);
-      allocations[_recipient] = Allocation(uint8(AllocationType.AIRDROP), 0, 0, _totalAllocated, 0);
-    } else if (_supply == 3) {
+    } else if (_supply == AllocationType.ADVISOR) {
       AVAILABLE_ADVISOR_SUPPLY = AVAILABLE_ADVISOR_SUPPLY.sub(_totalAllocated);
       allocations[_recipient] = Allocation(uint8(AllocationType.ADVISOR), startTime + 212 days, 0, _totalAllocated, 0);
-    } else if (_supply == 4) {
-      AVAILABLE_BONUS_SUPPLY = AVAILABLE_BONUS_SUPPLY.sub(_totalAllocated);
-      allocations[_recipient] = Allocation(uint8(AllocationType.BONUS), startTime + 1 years, startTime + 4 years, _totalAllocated, 0);
-    } else if (_supply == 5) {
+    } else if (_supply == AllocationType.RESERVE) {
       AVAILABLE_RESERVE_SUPPLY = AVAILABLE_RESERVE_SUPPLY.sub(_totalAllocated);
       allocations[_recipient] = Allocation(uint8(AllocationType.RESERVE), startTime + 182 days, startTime + 4 years, _totalAllocated, 0);
+    } else if (_supply == AllocationType.BONUS1) {
+      AVAILABLE_BONUS1_SUPPLY = AVAILABLE_BONUS1_SUPPLY.sub(_totalAllocated);
+      allocations[_recipient] = Allocation(uint8(AllocationType.BONUS1), startTime + 1 years, startTime + 1 years, _totalAllocated, 0);
+    } else if (_supply == AllocationType.BONUS2) {
+      AVAILABLE_BONUS2_SUPPLY = AVAILABLE_BONUS2_SUPPLY.sub(_totalAllocated);
+      allocations[_recipient] = Allocation(uint8(AllocationType.BONUS2), startTime + 2 years, startTime + 2 years, _totalAllocated, 0);
+    } else if (_supply == AllocationType.BONUS3) {
+      AVAILABLE_BONUS3_SUPPLY = AVAILABLE_BONUS3_SUPPLY.sub(_totalAllocated);
+      allocations[_recipient] = Allocation(uint8(AllocationType.BONUS3), startTime + 3 years, startTime + 3 years, _totalAllocated, 0);
     }
     AVAILABLE_TOTAL_SUPPLY = AVAILABLE_TOTAL_SUPPLY.sub(_totalAllocated);
-    grandTotalAllocated = grandTotalAllocated.add(_totalAllocated);
-    LogNewAllocation(_recipient, _supply, _totalAllocated, grandTotalAllocated);
+    LogNewAllocation(_recipient, _supply, _totalAllocated, grandTotalAllocated());
+  }
+
+  /**
+    * @dev Add an airdrop admin
+    */
+  function setAirdropAdmin(address _admin, bool _isAdmin) public onlyOwner {
+    airdropAdmins[_admin] = _isAdmin;
+  }
+
+  /**
+    * @dev perform a transfer of allocations
+    * @param _recipient is a list of recipients
+    */
+  function airdropTokens(address[] _recipient) public onlyOwnerOrAdmin {
+    require(now >= startTime);
+    uint airdropped;
+    for(uint8 i = 0; i< _recipient.length; i++)
+    {
+        if (!airdrops[_recipient[i]]) {
+          airdrops[_recipient[i]] = true;
+          require(POLY.transfer(_recipient[i], 250 * decimalFactor));
+          airdropped = airdropped.add(250 * decimalFactor);
+        }
+    }
+    AVAILABLE_AIRDROP_SUPPLY = AVAILABLE_AIRDROP_SUPPLY.sub(airdropped);
+    AVAILABLE_TOTAL_SUPPLY = AVAILABLE_TOTAL_SUPPLY.sub(airdropped);
+    grandTotalClaimed = grandTotalClaimed.add(airdropped);
   }
 
   /**
@@ -307,6 +397,7 @@ contract PolyDistribution is Ownable {
   function transferTokens (address _recipient) public {
     require(allocations[_recipient].amountClaimed < allocations[_recipient].totalAllocated);
     require(now >= allocations[_recipient].endCliff);
+    require(now >= startTime);
     uint256 newAmountClaimed;
     if (allocations[_recipient].endVesting > now) {
       // Transfer available amount based on vesting schedule and allocation
@@ -322,9 +413,14 @@ contract PolyDistribution is Ownable {
     LogPolyClaimed(_recipient, allocations[_recipient].AllocationSupply, tokensToTransfer, newAmountClaimed, grandTotalClaimed);
   }
 
+  // Returns the amount of POLY allocated
+  function grandTotalAllocated() public view returns (uint256) {
+    return INITIAL_SUPPLY - AVAILABLE_TOTAL_SUPPLY;
+  }
+
   // Allow transfer of accidentally sent ERC20 tokens
   function refundTokens(address _recipient, address _token) public onlyOwner {
-    require(_token != address(this));
+    require(_token != address(POLY));
     IERC20 token = IERC20(_token);
     uint256 balance = token.balanceOf(this);
     token.transfer(_recipient, balance);
