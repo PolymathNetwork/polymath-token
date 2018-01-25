@@ -85,12 +85,12 @@ function readFile() {
           stream = fs.createReadStream("scripts/data/presale.csv");
           break;
       case 1: //FOUNDER
-          stream = fs.createReadStream("scripts/data/founder.csv");
+          stream = fs.createReadStream("scripts/data/founders.csv");
           break;
       case 2: // AIRDROP
           break;
       case 3: // ADVISOR
-          stream = fs.createReadStream("scripts/data/advisor.csv");
+          stream = fs.createReadStream("scripts/data/advisors.csv");
           break;
       case 4: // RESERVE
           stream = fs.createReadStream("scripts/data/reserve.csv");
