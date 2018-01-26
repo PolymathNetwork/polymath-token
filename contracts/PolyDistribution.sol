@@ -20,13 +20,13 @@ contract PolyDistribution is Ownable {
   uint256 public constant INITIAL_SUPPLY   = 1000000000 * decimalFactor;
   uint256 public AVAILABLE_TOTAL_SUPPLY    = 1000000000 * decimalFactor;
   uint256 public AVAILABLE_PRESALE_SUPPLY  =  230000000 * decimalFactor; // 100% Released at Token Distribution (TD)
-  uint256 public AVAILABLE_FOUNDER_SUPPLY  =  150000000 * decimalFactor; // 25% Released at TD +1 year -> 100% at TD +4 years
+  uint256 public AVAILABLE_FOUNDER_SUPPLY  =  150000000 * decimalFactor; // 33% Released at TD +1 year -> 100% at TD +3 years
   uint256 public AVAILABLE_AIRDROP_SUPPLY  =   10000000 * decimalFactor; // 100% Released at TD
   uint256 public AVAILABLE_ADVISOR_SUPPLY  =   20000000 * decimalFactor; // 100% Released at TD +7 months
-  uint256 public AVAILABLE_RESERVE_SUPPLY  =  513116658 * decimalFactor; // 12.5% Released at TD +6 months -> 100% at TD +4 years
-  uint256 public AVAILABLE_BONUS1_SUPPLY  =    39053330 * decimalFactor;
-  uint256 public AVAILABLE_BONUS2_SUPPLY  =    9354408  * decimalFactor;
-  uint256 public AVAILABLE_BONUS3_SUPPLY  =    28475604 * decimalFactor;
+  uint256 public AVAILABLE_RESERVE_SUPPLY  =  513116658 * decimalFactor; // 6.8% Released at TD +100 days -> 100% at TD +4 years
+  uint256 public AVAILABLE_BONUS1_SUPPLY  =    39053330 * decimalFactor; // 100% Released at TD +1 year
+  uint256 public AVAILABLE_BONUS2_SUPPLY  =     9354408 * decimalFactor; // 100% Released at TD +2 years
+  uint256 public AVAILABLE_BONUS3_SUPPLY  =    28475604 * decimalFactor; // 100% Released at TD +3 years
 
   uint256 public grandTotalClaimed = 0;
   uint256 public startTime;
@@ -81,13 +81,13 @@ contract PolyDistribution is Ownable {
       allocations[_recipient] = Allocation(uint8(AllocationType.PRESALE), 0, 0, _totalAllocated, 0);
     } else if (_supply == AllocationType.FOUNDER) {
       AVAILABLE_FOUNDER_SUPPLY = AVAILABLE_FOUNDER_SUPPLY.sub(_totalAllocated);
-      allocations[_recipient] = Allocation(uint8(AllocationType.FOUNDER), startTime + 1 years, startTime + 4 years, _totalAllocated, 0);
+      allocations[_recipient] = Allocation(uint8(AllocationType.FOUNDER), startTime + 1 years, startTime + 3 years, _totalAllocated, 0);
     } else if (_supply == AllocationType.ADVISOR) {
       AVAILABLE_ADVISOR_SUPPLY = AVAILABLE_ADVISOR_SUPPLY.sub(_totalAllocated);
-      allocations[_recipient] = Allocation(uint8(AllocationType.ADVISOR), startTime + 212 days, 0, _totalAllocated, 0);
+      allocations[_recipient] = Allocation(uint8(AllocationType.ADVISOR), startTime + 209 days, 0, _totalAllocated, 0);
     } else if (_supply == AllocationType.RESERVE) {
       AVAILABLE_RESERVE_SUPPLY = AVAILABLE_RESERVE_SUPPLY.sub(_totalAllocated);
-      allocations[_recipient] = Allocation(uint8(AllocationType.RESERVE), startTime + 182 days, startTime + 4 years, _totalAllocated, 0);
+      allocations[_recipient] = Allocation(uint8(AllocationType.RESERVE), startTime + 100 days, startTime + 4 years, _totalAllocated, 0);
     } else if (_supply == AllocationType.BONUS1) {
       AVAILABLE_BONUS1_SUPPLY = AVAILABLE_BONUS1_SUPPLY.sub(_totalAllocated);
       allocations[_recipient] = Allocation(uint8(AllocationType.BONUS1), startTime + 1 years, startTime + 1 years, _totalAllocated, 0);
