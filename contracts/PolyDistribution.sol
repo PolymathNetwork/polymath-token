@@ -116,7 +116,7 @@ contract PolyDistribution is Ownable {
   function airdropTokens(address[] _recipient) public onlyOwnerOrAdmin {
     require(now >= startTime);
     uint airdropped;
-    for(uint8 i = 0; i< _recipient.length; i++)
+    for(uint i = 0; i< _recipient.length; i++)
     {
         if (!airdrops[_recipient[i]]) {
           airdrops[_recipient[i]] = true;
@@ -147,7 +147,7 @@ contract PolyDistribution is Ownable {
     }
     uint256 tokensToTransfer = newAmountClaimed.sub(allocations[_recipient].amountClaimed);
     allocations[_recipient].amountClaimed = newAmountClaimed;
-    POLY.transfer(_recipient, tokensToTransfer);
+    require(POLY.transfer(_recipient, tokensToTransfer));
     grandTotalClaimed = grandTotalClaimed.add(tokensToTransfer);
     LogPolyClaimed(_recipient, allocations[_recipient].AllocationSupply, tokensToTransfer, newAmountClaimed, grandTotalClaimed);
   }
@@ -162,6 +162,6 @@ contract PolyDistribution is Ownable {
     require(_token != address(POLY));
     IERC20 token = IERC20(_token);
     uint256 balance = token.balanceOf(this);
-    token.transfer(_recipient, balance);
+    require(token.transfer(_recipient, balance));
   }
 }
