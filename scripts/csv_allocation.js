@@ -42,7 +42,6 @@ let BATCH_SIZE = process.argv.slice(2)[1];
 if(!BATCH_SIZE) BATCH_SIZE = 80;
 let distribData = new Array();
 let allocData = new Array();
-let fullFileData = new Array();
 
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -87,8 +86,6 @@ async function setAllocation() {
   var sumAccounts = 0;
   var sumTokens = 0;
 
-  var eventData = new Array();
-
   var events = await polyToken.Transfer({from: polyDistribution.address},{fromBlock: 0, toBlock: 'latest'});
   events.get(function(error, log) {
       event_data = log;
@@ -98,27 +95,11 @@ async function setAllocation() {
           //let addressB = event_data[i].args.to;
           sumTokens += event_data[i].args.value.times(10 ** -18).toNumber();
           sumAccounts +=1;
-          eventData.push(event_data[i].args.to);
           //console.log(`Distributed ${tokens} POLY to address ${addressB}`);
 
       }
-
       console.log(`A total of ${sumTokens} POLY tokens have been distributed to ${sumAccounts} accounts so far.`);
-      var eventData_s = new Set(eventData);
-      let missingDistribs = fullFileData.filter(x => !eventData_s.has(x));
-
-      if(missingDistribs.length >0){
-          console.log("************************");
-          console.log("-- No Transfer event was found for the followign accounts. Please review them manually --")
-          for(var i = 0; i<missingDistribs.length;i++){
-              console.log('\x1b[31m%s\x1b[0m',`No Transfer event was found for account ${missingDistribs[i]}`);
-          }
-          console.log("************************");
-      }
-
-      //console.log(`Run 'node scripts/verify_airdrop.js ${polyDistribution.address} > scripts/data/review.csv' to get a log of all the accounts that were distributed the airdrop tokens.`)
-
-
+      console.log(`Run 'node scripts/verify_airdrop.js ${polyDistribution.address} > scripts/data/review.csv' to get a log of all the accounts that were distributed the airdrop tokens.`)
   });
 
 }
@@ -145,7 +126,6 @@ function readFile() {
           let isAddress = web3.utils.isAddress(data[0]);
           if(isAddress && data[0]!=null && data[0]!='' ){
             allocData.push(data[0]);
-            fullFileData.push(data[0]);
 
             index++;
             if(index >= BATCH_SIZE)

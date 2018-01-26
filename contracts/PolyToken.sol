@@ -26,9 +26,7 @@ contract PolyToken is IERC20 {
   * @dev Assigns the totalSupply to the PolyDistribution contract
   */
   function PolyToken(address _polyDistributionContractAddress) public {
-    require(_polyDistributionContractAddress != address(0));
     balances[_polyDistributionContractAddress] = totalSupply;
-    Transfer(address(0), msg.sender, totalSupply);
   }
 
   /**
