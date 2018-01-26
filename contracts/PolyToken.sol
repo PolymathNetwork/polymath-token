@@ -17,9 +17,12 @@ contract PolyToken is IERC20 {
   string public symbol = 'POLY';
   uint8 public constant decimals = 18;
   uint256 public constant decimalFactor = 10 ** uint256(decimals);
-  uint256 public totalSupply = 1000000000 * decimalFactor;
+  uint256 public constant totalSupply = 1000000000 * decimalFactor;
   mapping (address => uint256) balances;
   mapping (address => mapping (address => uint256)) internal allowed;
+
+  event Transfer(address indexed from, address indexed to, uint256 value);
+  event Approval(address indexed owner, address indexed spender, uint256 value);
 
   /**
   * @dev Constructor for Poly creation
@@ -28,7 +31,7 @@ contract PolyToken is IERC20 {
   function PolyToken(address _polyDistributionContractAddress) public {
     require(_polyDistributionContractAddress != address(0));
     balances[_polyDistributionContractAddress] = totalSupply;
-    Transfer(address(0), msg.sender, totalSupply);
+    Transfer(address(0), _polyDistributionContractAddress, totalSupply);
   }
 
   /**
