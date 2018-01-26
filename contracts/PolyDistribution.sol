@@ -24,9 +24,9 @@ contract PolyDistribution is Ownable {
   uint256 public AVAILABLE_AIRDROP_SUPPLY  =   10000000 * decimalFactor; // 100% Released at TD
   uint256 public AVAILABLE_ADVISOR_SUPPLY  =   20000000 * decimalFactor; // 100% Released at TD +7 months
   uint256 public AVAILABLE_RESERVE_SUPPLY  =  513116658 * decimalFactor; // 12.5% Released at TD +6 months -> 100% at TD +4 years
-  uint256 public AVAILABLE_BONUS1_SUPPLY  =    39053330 * decimalFactor;
-  uint256 public AVAILABLE_BONUS2_SUPPLY  =    9354408  * decimalFactor;
-  uint256 public AVAILABLE_BONUS3_SUPPLY  =    28475604 * decimalFactor;
+  uint256 public AVAILABLE_BONUS1_SUPPLY  =    39053330 * decimalFactor; // 100% Released at TD +1 year
+  uint256 public AVAILABLE_BONUS2_SUPPLY  =     9354408 * decimalFactor; // 100% Released at TD +2 years
+  uint256 public AVAILABLE_BONUS3_SUPPLY  =    28475604 * decimalFactor; // 100% Released at TD +3 years
 
   uint256 public grandTotalClaimed = 0;
   uint256 public startTime;
@@ -115,8 +115,8 @@ contract PolyDistribution is Ownable {
     */
   function airdropTokens(address[] _recipient) public onlyOwnerOrAdmin {
     require(now >= startTime);
-    uint airdropped;
-    for(uint8 i = 0; i< _recipient.length; i++)
+    uint256 airdropped;
+    for(uint256 i = 0; i< _recipient.length; i++)
     {
         if (!airdrops[_recipient[i]]) {
           airdrops[_recipient[i]] = true;
