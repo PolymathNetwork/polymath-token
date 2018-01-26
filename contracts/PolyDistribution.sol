@@ -19,15 +19,14 @@ contract PolyDistribution is Ownable {
   enum AllocationType { PRESALE, FOUNDER, AIRDROP, ADVISOR, RESERVE, BONUS1, BONUS2, BONUS3 }
   uint256 public constant INITIAL_SUPPLY   = 1000000000 * decimalFactor;
   uint256 public AVAILABLE_TOTAL_SUPPLY    = 1000000000 * decimalFactor;
-  uint256 public AVAILABLE_PRESALE_SUPPLY  =  240000000 * decimalFactor; // 100% Released at Token Distribution (TD)
+  uint256 public AVAILABLE_PRESALE_SUPPLY  =  230000000 * decimalFactor; // 100% Released at Token Distribution (TD)
   uint256 public AVAILABLE_FOUNDER_SUPPLY  =  150000000 * decimalFactor; // 25% Released at TD +1 year -> 100% at TD +4 years
   uint256 public AVAILABLE_AIRDROP_SUPPLY  =   10000000 * decimalFactor; // 100% Released at TD
-  uint256 public AVAILABLE_ADVISOR_SUPPLY  =   25000000 * decimalFactor; // 100% Released at TD +7 months
-  uint256 public AVAILABLE_RESERVE_SUPPLY  =  495000000 * decimalFactor; // 12.5% Released at TD +6 months -> 100% at TD +4 years
-
-  uint256 public AVAILABLE_BONUS1_SUPPLY  =    20000000 * decimalFactor;
-  uint256 public AVAILABLE_BONUS2_SUPPLY  =    30000000 * decimalFactor;
-  uint256 public AVAILABLE_BONUS3_SUPPLY  =    30000000 * decimalFactor;
+  uint256 public AVAILABLE_ADVISOR_SUPPLY  =   20000000 * decimalFactor; // 100% Released at TD +7 months
+  uint256 public AVAILABLE_RESERVE_SUPPLY  =  513116658 * decimalFactor; // 12.5% Released at TD +6 months -> 100% at TD +4 years
+  uint256 public AVAILABLE_BONUS1_SUPPLY  =    39053330 * decimalFactor;
+  uint256 public AVAILABLE_BONUS2_SUPPLY  =    9354408  * decimalFactor;
+  uint256 public AVAILABLE_BONUS3_SUPPLY  =    28475604 * decimalFactor;
 
   uint256 public grandTotalClaimed = 0;
   uint256 public startTime;
@@ -60,12 +59,12 @@ contract PolyDistribution is Ownable {
     * @dev Constructor function - Set the poly token address
     * @param _startTime The time when PolyDistribution goes live
     */
-    function PolyDistribution(uint256 _startTime) public {
-      require(_startTime >= now);
-      require(AVAILABLE_TOTAL_SUPPLY == AVAILABLE_PRESALE_SUPPLY.add(AVAILABLE_FOUNDER_SUPPLY).add(AVAILABLE_AIRDROP_SUPPLY).add(AVAILABLE_ADVISOR_SUPPLY).add(AVAILABLE_BONUS1_SUPPLY).add(AVAILABLE_BONUS2_SUPPLY).add(AVAILABLE_BONUS3_SUPPLY).add(AVAILABLE_RESERVE_SUPPLY));
-      startTime = _startTime;
-      POLY = new PolyToken(this);
-    }
+  function PolyDistribution(uint256 _startTime) public {
+    require(_startTime >= now);
+    require(AVAILABLE_TOTAL_SUPPLY == AVAILABLE_PRESALE_SUPPLY.add(AVAILABLE_FOUNDER_SUPPLY).add(AVAILABLE_AIRDROP_SUPPLY).add(AVAILABLE_ADVISOR_SUPPLY).add(AVAILABLE_BONUS1_SUPPLY).add(AVAILABLE_BONUS2_SUPPLY).add(AVAILABLE_BONUS3_SUPPLY).add(AVAILABLE_RESERVE_SUPPLY));
+    startTime = _startTime;
+    POLY = new PolyToken(this);
+  }
 
   /**
     * @dev Allow the owner of the contract to assign a new allocation
