@@ -18,10 +18,19 @@ module.exports = {
     },
     ropsten: {
       host: 'localhost',
+      from: '0x00F13d5bCA2E8A4E58fD8018a7b1e8D286dD135A',
       port: 8545,
       network_id: '3', // Match any network id
-      gas: 3500000,
-      gasPrice: 50000000000
+      gas: 4500000,
+      gasPrice: 330000000000
+    },
+    kovan: {
+      host: 'localhost',
+      from: '0x007d9F7cc97E3D9a3f56f1335517f3648C42c370',
+      port: 8545,
+      network_id: '42', // Match any network id
+      gas: 4500000,
+      gasPrice: 130000000000
     },
     local: {
       host: 'localhost',

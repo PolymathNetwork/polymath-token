@@ -4,12 +4,12 @@ pragma solidity ^0.4.18;
  * @title ERC20 interface
  * @dev see https://github.com/ethereum/EIPs/issues/20
  */
-contract IERC20 {
-  function balanceOf(address who) public view returns (uint256);
-  function allowance(address owner, address spender) public view returns (uint256);
-  function transfer(address to, uint256 value) public returns (bool);
-  function transferFrom(address from, address to, uint256 value) public returns (bool);
-  function approve(address spender, uint256 value) public returns (bool);
+interface IERC20 {
+  function balanceOf(address _owner) public view returns (uint256);
+  function allowance(address _owner, address _spender) public view returns (uint256);
+  function transfer(address _to, uint256 _value) public returns (bool);
+  function transferFrom(address _from, address _to, uint256 _value) public returns (bool);
+  function approve(address _spender, uint256 _value) public returns (bool);
   event Transfer(address indexed from, address indexed to, uint256 value);
   event Approval(address indexed owner, address indexed spender, uint256 value);
 }
@@ -84,16 +84,21 @@ contract PolyToken is IERC20 {
   string public symbol = 'POLY';
   uint8 public constant decimals = 18;
   uint256 public constant decimalFactor = 10 ** uint256(decimals);
-  uint256 public totalSupply = 1000000000 * decimalFactor;
+  uint256 public constant totalSupply = 1000000000 * decimalFactor;
   mapping (address => uint256) balances;
   mapping (address => mapping (address => uint256)) internal allowed;
+
+  event Transfer(address indexed from, address indexed to, uint256 value);
+  event Approval(address indexed owner, address indexed spender, uint256 value);
 
   /**
   * @dev Constructor for Poly creation
   * @dev Assigns the totalSupply to the PolyDistribution contract
   */
   function PolyToken(address _polyDistributionContractAddress) public {
+    require(_polyDistributionContractAddress != address(0));
     balances[_polyDistributionContractAddress] = totalSupply;
+    Transfer(address(0), _polyDistributionContractAddress, totalSupply);
   }
 
   /**

@@ -4,12 +4,12 @@ pragma solidity ^0.4.18;
  * @title ERC20 interface
  * @dev see https://github.com/ethereum/EIPs/issues/20
  */
-contract IERC20 {
-  function balanceOf(address who) public view returns (uint256);
-  function allowance(address owner, address spender) public view returns (uint256);
-  function transfer(address to, uint256 value) public returns (bool);
-  function transferFrom(address from, address to, uint256 value) public returns (bool);
-  function approve(address spender, uint256 value) public returns (bool);
+interface IERC20 {
+  function balanceOf(address _owner) public view returns (uint256);
+  function allowance(address _owner, address _spender) public view returns (uint256);
+  function transfer(address _to, uint256 _value) public returns (bool);
+  function transferFrom(address _from, address _to, uint256 _value) public returns (bool);
+  function approve(address _spender, uint256 _value) public returns (bool);
   event Transfer(address indexed from, address indexed to, uint256 value);
   event Approval(address indexed owner, address indexed spender, uint256 value);
 }
@@ -84,16 +84,21 @@ contract PolyToken is IERC20 {
   string public symbol = 'POLY';
   uint8 public constant decimals = 18;
   uint256 public constant decimalFactor = 10 ** uint256(decimals);
-  uint256 public totalSupply = 1000000000 * decimalFactor;
+  uint256 public constant totalSupply = 1000000000 * decimalFactor;
   mapping (address => uint256) balances;
   mapping (address => mapping (address => uint256)) internal allowed;
+
+  event Transfer(address indexed from, address indexed to, uint256 value);
+  event Approval(address indexed owner, address indexed spender, uint256 value);
 
   /**
   * @dev Constructor for Poly creation
   * @dev Assigns the totalSupply to the PolyDistribution contract
   */
   function PolyToken(address _polyDistributionContractAddress) public {
+    require(_polyDistributionContractAddress != address(0));
     balances[_polyDistributionContractAddress] = totalSupply;
+    Transfer(address(0), _polyDistributionContractAddress, totalSupply);
   }
 
   /**
@@ -280,13 +285,13 @@ contract PolyDistribution is Ownable {
   uint256 public constant INITIAL_SUPPLY   = 1000000000 * decimalFactor;
   uint256 public AVAILABLE_TOTAL_SUPPLY    = 1000000000 * decimalFactor;
   uint256 public AVAILABLE_PRESALE_SUPPLY  =  230000000 * decimalFactor; // 100% Released at Token Distribution (TD)
-  uint256 public AVAILABLE_FOUNDER_SUPPLY  =  150000000 * decimalFactor; // 25% Released at TD +1 year -> 100% at TD +4 years
+  uint256 public AVAILABLE_FOUNDER_SUPPLY  =  150000000 * decimalFactor; // 33% Released at TD +1 year -> 100% at TD +3 years
   uint256 public AVAILABLE_AIRDROP_SUPPLY  =   10000000 * decimalFactor; // 100% Released at TD
   uint256 public AVAILABLE_ADVISOR_SUPPLY  =   20000000 * decimalFactor; // 100% Released at TD +7 months
-  uint256 public AVAILABLE_RESERVE_SUPPLY  =  513116658 * decimalFactor; // 12.5% Released at TD +6 months -> 100% at TD +4 years
-  uint256 public AVAILABLE_BONUS1_SUPPLY  =    39053330 * decimalFactor;
-  uint256 public AVAILABLE_BONUS2_SUPPLY  =    9354408  * decimalFactor;
-  uint256 public AVAILABLE_BONUS3_SUPPLY  =    28475604 * decimalFactor;
+  uint256 public AVAILABLE_RESERVE_SUPPLY  =  513116658 * decimalFactor; // 6.8% Released at TD +100 days -> 100% at TD +4 years
+  uint256 public AVAILABLE_BONUS1_SUPPLY  =    39053330 * decimalFactor; // 100% Released at TD +1 year
+  uint256 public AVAILABLE_BONUS2_SUPPLY  =     9354408 * decimalFactor; // 100% Released at TD +2 years
+  uint256 public AVAILABLE_BONUS3_SUPPLY  =    28475604 * decimalFactor; // 100% Released at TD +3 years
 
   uint256 public grandTotalClaimed = 0;
   uint256 public startTime;
@@ -341,13 +346,13 @@ contract PolyDistribution is Ownable {
       allocations[_recipient] = Allocation(uint8(AllocationType.PRESALE), 0, 0, _totalAllocated, 0);
     } else if (_supply == AllocationType.FOUNDER) {
       AVAILABLE_FOUNDER_SUPPLY = AVAILABLE_FOUNDER_SUPPLY.sub(_totalAllocated);
-      allocations[_recipient] = Allocation(uint8(AllocationType.FOUNDER), startTime + 1 years, startTime + 4 years, _totalAllocated, 0);
+      allocations[_recipient] = Allocation(uint8(AllocationType.FOUNDER), startTime + 1 years, startTime + 3 years, _totalAllocated, 0);
     } else if (_supply == AllocationType.ADVISOR) {
       AVAILABLE_ADVISOR_SUPPLY = AVAILABLE_ADVISOR_SUPPLY.sub(_totalAllocated);
-      allocations[_recipient] = Allocation(uint8(AllocationType.ADVISOR), startTime + 212 days, 0, _totalAllocated, 0);
+      allocations[_recipient] = Allocation(uint8(AllocationType.ADVISOR), startTime + 209 days, 0, _totalAllocated, 0);
     } else if (_supply == AllocationType.RESERVE) {
       AVAILABLE_RESERVE_SUPPLY = AVAILABLE_RESERVE_SUPPLY.sub(_totalAllocated);
-      allocations[_recipient] = Allocation(uint8(AllocationType.RESERVE), startTime + 182 days, startTime + 4 years, _totalAllocated, 0);
+      allocations[_recipient] = Allocation(uint8(AllocationType.RESERVE), startTime + 100 days, startTime + 4 years, _totalAllocated, 0);
     } else if (_supply == AllocationType.BONUS1) {
       AVAILABLE_BONUS1_SUPPLY = AVAILABLE_BONUS1_SUPPLY.sub(_totalAllocated);
       allocations[_recipient] = Allocation(uint8(AllocationType.BONUS1), startTime + 1 years, startTime + 1 years, _totalAllocated, 0);
@@ -376,7 +381,7 @@ contract PolyDistribution is Ownable {
   function airdropTokens(address[] _recipient) public onlyOwnerOrAdmin {
     require(now >= startTime);
     uint airdropped;
-    for(uint8 i = 0; i< _recipient.length; i++)
+    for(uint256 i = 0; i< _recipient.length; i++)
     {
         if (!airdrops[_recipient[i]]) {
           airdrops[_recipient[i]] = true;
@@ -407,7 +412,7 @@ contract PolyDistribution is Ownable {
     }
     uint256 tokensToTransfer = newAmountClaimed.sub(allocations[_recipient].amountClaimed);
     allocations[_recipient].amountClaimed = newAmountClaimed;
-    POLY.transfer(_recipient, tokensToTransfer);
+    require(POLY.transfer(_recipient, tokensToTransfer));
     grandTotalClaimed = grandTotalClaimed.add(tokensToTransfer);
     LogPolyClaimed(_recipient, allocations[_recipient].AllocationSupply, tokensToTransfer, newAmountClaimed, grandTotalClaimed);
   }
@@ -422,6 +427,6 @@ contract PolyDistribution is Ownable {
     require(_token != address(POLY));
     IERC20 token = IERC20(_token);
     uint256 balance = token.balanceOf(this);
-    token.transfer(_recipient, balance);
+    require(token.transfer(_recipient, balance));
   }
 }

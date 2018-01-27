@@ -1,34 +1,22 @@
-# Polymath (POLY) Token Distribution
+# Polymath (POLY) Token
 
 <img src="https://travis-ci.org/PolymathNetwork/polymath-token-distribution.svg?branch=master"/> <a href="https://t.me/polymathnetwork" target="_blank"><img src="https://img.shields.io/badge/50k+-telegram-blue.svg"></a>
 
-The Ethereum contracts for the [Polymath](https://polymath.network) (POLY) token
-distribution. The primary purpose is to allocate tokens to purchasers, advisors,
-reserve, community members, and founders.
+The Ethereum contracts for the [Polymath](https://polymath.network) token  (POLY) and token distribution.
 
 ![Polymath](Polymath.png)
 
-POLY tokens are used to align incentives of network participants, and help
-ensure compliant security token offerings.
+Check out [polymath-core](https://github.com/PolymathNetwork/polymath-core) for details on how POLY is used to power the Polymath Securities Token Platform.
 
 # Live on Ethereum
 
-#### [Testnet (Ropsten)](https://ropsten.etherscan.io/address/0x3f9d29ead6493db97e9756d54171e8844ce87ddd)
+The contracts are currently available on Ropsten testnet. We will be announcing the Mainnet contracts next week.
 
-#### mainnet (coming soon)
+## Mainnet
+Launching on Mainnet on January 31st, 2018.
 
-# Contributing
+## Testnet
 
-If you find any issues please open a new issue on github.
+Poly Token: [0x75e2b469d92e90aeca511be20384af83c0578646](https://ropsten.etherscan.io/address/0xcceae97b9ee2f89e62367bf95d970678a5c59958)
 
-# Community Airdrop
-
-Please [join our Telegram](https://t.me/polymathnetwork) for details on the
-airdrop!
-
-# Performing the airdrop
-
-1. Run `truffle migrate` to deploy the distribution and POLY token contract. Take note of the address of the PolyDistribution contract.
-2. Add a csv file named `airdrop_distrib.csv` to the scripts folder. It should contain one valid address per row.
-3. Run `node scripts/csv_allocation.js [ADDRESS of POLYDISTRIBUTION]` This will process the airdrop_distrib.csv file and transfer 250 POLY to each address.
-4. Run `node scripts/verify_airdrop.js [ADDRESS of POLYDISTRIBUTION] > scripts/data/review.csv` to retrieve the event log of the distribution and output it to a csv file you can use to compare the intended distribution and the results.
+Token Distribution: [0x75e2b469d92e90aeca511be20384af83c0578646](https://ropsten.etherscan.io/address/0x75e2b469d92e90aeca511be20384af83c0578646)
