@@ -12,6 +12,7 @@
     "coverage": "./node_modules/.bin/solidity-coverage",
     "migrate-local": "truffle migrate --network=local --reset",
     "migrate-ropsten": "truffle migrate --network=ropsten --reset",
+    "migrate-kovan": "truffle migrate --network=kovan --reset",
     "flatten": "sol-merger './contracts/*.sol' ./flat"
   },
   "repository": {
