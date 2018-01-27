@@ -1,6 +1,6 @@
 # Polymath (POLY) Token
 
-<img src="https://travis-ci.org/PolymathNetwork/polymath-token-distribution.svg?branch=master"/> <a href="https://t.me/polymathnetwork" target="_blank"><img src="https://img.shields.io/badge/50k+-telegram-blue.svg"></a>
+[![Build Status](https://travis-ci.org/PolymathNetwork/polymath-token-distribution.svg?branch=master)](https://travis-ci.org/PolymathNetwork/polymath-token-distribution) <a href="https://t.me/polymathnetwork" target="_blank"><img src="https://img.shields.io/badge/50k+-telegram-blue.svg"></a>
 
 The Ethereum contracts for the [Polymath](https://polymath.network) token  (POLY) and token distribution.
 
