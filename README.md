@@ -17,6 +17,6 @@ Launching on Mainnet on January 31st, 2018.
 
 ## Testnet
 
-Poly Token: [0x75e2b469d92e90aeca511be20384af83c0578646](https://ropsten.etherscan.io/address/0xcceae97b9ee2f89e62367bf95d970678a5c59958)
+Poly Token: [0xcCeAE97b9EE2f89E62367bf95d970678a5c59958](https://ropsten.etherscan.io/address/0xcceae97b9ee2f89e62367bf95d970678a5c59958#code)
 
-Token Distribution: [0x75e2b469d92e90aeca511be20384af83c0578646](https://ropsten.etherscan.io/address/0x75e2b469d92e90aeca511be20384af83c0578646)
+Token Distribution: [0x75e2b469d92e90aeca511be20384af83c0578646](https://ropsten.etherscan.io/address/0x75e2b469d92e90aeca511be20384af83c0578646#code)
