@@ -3,7 +3,7 @@ var PolyDistribution = artifacts.require('./PolyDistribution.sol');
 
 module.exports = async (deployer, network) => {
   let _now = Date.now();
-  let _fromNow = 60 * 60 * 1000; // Start distribution in 1 hour
+  let _fromNow = 129600 * 1000; // Start distribution in 1 hour
   let _startTime = (_now + _fromNow) / 1000;
   await deployer.deploy(PolyDistribution, _startTime);
   console.log(`
