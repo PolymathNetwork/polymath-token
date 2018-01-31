@@ -10,10 +10,12 @@ Check out [polymath-core](https://github.com/PolymathNetwork/polymath-core) for 
 
 # Live on Ethereum
 
-The contracts are currently available on Ropsten testnet. We will be announcing the Mainnet contracts next week.
+The contracts are currently available on both Ethereum mainnet and testnet (ropsten).
 
 ## Mainnet
-Launching on Mainnet on January 31st, 2018.
+Poly Token: [0x9992ec3cf6a55b00978cddf2b27bc6882d88d1ec](https://etherscan.io/address/0x9992ec3cf6a55b00978cddf2b27bc6882d88d1ec)
+
+Token Distribution: [0x105b2b74fe6de95b68d435f3a3bc8ace03cf1658](https://etherscan.io/address/0x105b2b74fe6de95b68d435f3a3bc8ace03cf1658)
 
 ## Testnet
 
